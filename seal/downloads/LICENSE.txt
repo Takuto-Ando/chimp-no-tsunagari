@@ -1,6 +1,6 @@
 The Lamb Family, Harbor seals (Phoca vitulina). CC BY-SA 2.0.
 Source: https://commons.wikimedia.org/wiki/File:Harbor_seals_(Phoca_vitulina).webm
 License: https://creativecommons.org/licenses/by-sa/2.0/
-Changes: 19-second excerpt, silent, re-encoded; manual interpolated BBoxes, provisional names and synchronized co-occurrence graph burned into video.
+Changes: 19-second excerpt, silent, re-encoded; manual interpolated BBoxes, provisional names and synchronized co-occurrence arrows over animals burned into video.
 Not AI detections, verified individual names or social relationships. Unannotated or uncertain animals/segments may remain. No endorsement implied.
 This adapted video is distributed under CC BY-SA 2.0.

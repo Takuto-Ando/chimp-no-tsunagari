@@ -91,6 +91,10 @@ http://127.0.0.1:5189/animals.html で動物種・動画カードを切り替え
 
 加工動画検証pass: 190フレーム・19秒・1280×720・10fps、全decode、4秒時点のBBox2件以上と相関辺、焼き込み画像の目視確認、ダウンロードSHA256一致。45テスト、TypeScript/Vite、Ruff、全仮名表示と5種の相関図・シーク・再生回帰もpass。
 
+映像内矢印への修正: `seal/downloads/seal_harbor_19s-arrows.mp4` はチンパンジーと同じ `RelationshipOverlay` を再利用し、映像内の2頭間に共起矢印と「共起」を焼き込む。別枠の相関図は動画に含めない。UIでも「映像にも関係線」で表示／非表示を切り替え可能。矢印は社会関係・行動方向を示さない。
+
+映像内矢印検証pass: 再生時刻に応じた矢印位置の変化、関係線チェックによる表示切替、焼き込みプレビューの目視、19秒・190フレーム・1280×720。TypeScript/Vite・45テスト・Ruff・仮名と既存5種の動作回帰もpass。
+
 ## Additional GT animal demos
 
 datasets/ contains koi, pigeons and pigs from Animal Re-Identification from Video, https://zenodo.org/records/7322821 . Dataset annotations: CC BY 4.0; original stock videos: Pixabay License. These media are integrated into the interactive GT viewer, not offered as standalone downloads. Individual IDs are video-local ground truth, not AI predictions. Only observed co-occurrence/proximity is shown, with no invented social relationships or biographies. Full authors, provenance and modifications: datasets/LICENSE.txt. The original ChimpACT files keep their separate CC BY-NC 4.0 license.

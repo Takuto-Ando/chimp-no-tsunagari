@@ -8,7 +8,7 @@ from playwright.sync_api import sync_playwright
 
 def export(url, output):
     output.mkdir(parents=True, exist_ok=False)
-    target = output / "seal_harbor_19s-mapped.mp4"
+    target = output / "seal_harbor_19s-arrows.mp4"
     with sync_playwright() as driver:
         executable = (
             Path.home()
@@ -23,26 +23,25 @@ def export(url, output):
         page.wait_for_selector(".react-flow__node")
         page.add_style_tag(
             content="""
-            .stage { position: fixed !important; left: 0 !important; top: 90px !important;
-                width: 960px !important; height: 540px !important; max-width: none !important;
+            .stage { position: fixed !important; left: 0 !important; top: 0 !important;
+                width: 1280px !important; height: 720px !important; max-width: none !important;
                 border-radius: 0 !important; z-index: 9999; }
-            .react-flow { position: fixed !important; left: 960px !important; top: 90px !important;
-                width: 320px !important; height: 540px !important; z-index: 9999;
-                background: #fafafa !important; }
+            .react-flow { display: none !important; }
             .react-flow__node, .stage * { transition: none !important; }
             .react-flow__controls, .react-flow__attribution { display: none !important; }
             .overlay .bbox rect { stroke-opacity: 1 !important; stroke-width: 3px !important; }
+            .relationship-telop { transform: translateY(-22px); }
             .react-flow__viewport { transform: translate(25px, 95px) scale(0.65) !important; }
         """
         )
         page.evaluate(r"""() => {
             for (const [top, height, text] of [
-                [0, 90, 'アザラシ：手動BBox・仮名／動く観測相関図（AI検出ではありません）'],
-                [630, 90, '名前は仮名。線は同時出現・画像上の近接で、社会関係ではありません。\nThe Lamb Family · Harbor seals · CC BY-SA 2.0 · 無音・再圧縮・注釈追加']
+                [0, 48, 'アザラシ：手動BBox・仮名・映像内の共起矢印（AI検出ではありません）'],
+                [656, 64, '名前は仮名。矢印は同時出現で、社会関係・行動方向ではありません。\nThe Lamb Family · Harbor seals · CC BY-SA 2.0 · 無音・再圧縮・注釈追加']
             ]) {
                 const banner = document.createElement('div');
                 banner.textContent = text;
-                banner.style.cssText = `position:fixed;left:0;top:${top}px;width:1280px;height:${height}px;z-index:10000;background:#102b34;color:white;padding:18px;box-sizing:border-box;font:20px sans-serif;white-space:pre-line`;
+                banner.style.cssText = `position:fixed;left:0;top:${top}px;width:1280px;height:${height}px;z-index:10000;background:#102b34;color:white;padding:8px;box-sizing:border-box;font:20px sans-serif;white-space:pre-line`;
                 document.body.append(banner);
             }
         }""")
@@ -98,7 +97,7 @@ def export(url, output):
                     assert (
                         page.locator('svg.overlay [aria-label$="のBBox"]').count() >= 2
                     )
-                    assert page.locator(".react-flow__edge").count() > 0
+                    assert page.locator("svg.overlay .relationship-arrow").count() > 0
                     page.screenshot(
                         path=str(output / "preview.png"),
                         clip={"x": 0, "y": 0, "width": 1280, "height": 720},
@@ -144,7 +143,7 @@ def export(url, output):
         "Source: https://commons.wikimedia.org/wiki/File:Harbor_seals_(Phoca_vitulina).webm\n"
         "License: https://creativecommons.org/licenses/by-sa/2.0/\n"
         "Changes: 19-second excerpt, silent, re-encoded; manual interpolated BBoxes, "
-        "provisional names and synchronized co-occurrence graph burned into video.\n"
+        "provisional names and synchronized co-occurrence arrows over animals burned into video.\n"
         "Not AI detections, verified individual names or social relationships. "
         "Unannotated or uncertain animals/segments may remain. No endorsement implied.\n"
         "This adapted video is distributed under CC BY-SA 2.0.\n"

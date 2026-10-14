@@ -146,10 +146,10 @@
 +          {pagesMode && videoId === "seal_harbor_19s" && (
 +            <>
 +              <a
-+                href={`${import.meta.env.BASE_URL}seal/downloads/seal_harbor_19s-mapped.mp4`}
++                href={`${import.meta.env.BASE_URL}seal/downloads/seal_harbor_19s-arrows.mp4`}
 +                download
 +              >
-+                BBox・仮名・動く相関図入り動画を保存（19秒MP4）
++                BBox・仮名・映像内の矢印入り動画を保存（19秒MP4）
 +              </a>{" "}
 +              <a href={`${import.meta.env.BASE_URL}seal/downloads/LICENSE.txt`}>
 +                加工動画の利用条件
@@ -190,10 +190,28 @@
 @@ -696 +799 @@
 -                  src={mediaUrl(videoId)}
 +                  src={mediaUrl(videoId, sealMode)}
-@@ -945 +1048 @@
+@@ -742,0 +846,15 @@
++                  {sealMode && overlay && (
++                    <RelationshipOverlay
++                      observations={displayedObservations}
++                      relations={relations.map((relation) => ({
++                        id: `${relation.individual_a}:${relation.individual_b}`,
++                        individual_a: relation.individual_a,
++                        individual_b: relation.individual_b,
++                        kind: "support",
++                        label: "共起",
++                      }))}
++                      video={video}
++                      displayWidth={displayWidth}
++                      observed
++                    />
++                  )}
+@@ -752,0 +871 @@
++                    !sealMode &&
+@@ -945 +1064 @@
 -              {active.size} 個体識別
 +              {active.size} {sealMode ? "一時追跡" : "個体識別"}
-@@ -951,17 +1054,19 @@
+@@ -951,17 +1070,19 @@
 -          <BehaviorTimeline
 -            selected={chosen?.id ?? null}
 -            videoId={videoId}
@@ -230,25 +248,25 @@
 +              }}
 +            />
 +          )}
-@@ -1010 +1115,5 @@
+@@ -1010 +1131,5 @@
 -          <div className="metrics">
 +          <div
 +            className="metrics"
 +            hidden={sealMode}
 +            style={sealMode ? { display: "none" } : undefined}
 +          >
-@@ -1061 +1170 @@
+@@ -1061 +1186 @@
 -          <p className="footnote">
 +          <p className="footnote" hidden={sealMode}>
-@@ -1087 +1196 @@
+@@ -1087 +1212 @@
 -              placeholder="Azibo、Swela…"
 +              placeholder={sealMode ? "しお、なぎ、みなと…" : "Azibo、Swela…"}
-@@ -1115,0 +1225,4 @@
+@@ -1115,0 +1241,4 @@
 +              icon={sealMode ? "🦭" : "🐒"}
 +              animals={individuals}
 +              observations={displayedObservations}
 +              video={video}
-@@ -1125,5 +1238,7 @@
+@@ -1125,5 +1254,7 @@
 -            <AnimalExperience
 -              selected={chosen?.id ?? null}
 -              demo={demo}
@@ -261,7 +279,7 @@
 +                relations={demoRelations}
 +              />
 +            )}
-@@ -1132 +1247,6 @@
+@@ -1132 +1263,6 @@
 -                <p>チンパンジー · {chosen.id}</p>
 +                <p>
 +                  {sealMode
@@ -269,28 +287,28 @@
 +                    : "チンパンジー"}{" "}
 +                  · {chosen.id}
 +                </p>
-@@ -1165 +1285,3 @@
+@@ -1165 +1301,3 @@
 -                  名前対応はChimpACT公式注釈コード由来。性格・親子・友好関係は登録していません。
 +                  {sealMode
 +                    ? `「${chosen.name}」は展示用の仮名です。実在名ではなく、この映像内だけの一時追跡IDに付けています。SealIDとの対応・性別・社会関係は未確認です。`
 +                    : "名前対応はChimpACT公式注釈コード由来。性格・親子・友好関係は登録していません。"}
-@@ -1238 +1360 @@
+@@ -1238 +1376 @@
 -      <footer>
 +      <footer id="sources">
-@@ -1240 +1362,5 @@
+@@ -1240 +1378,5 @@
 -          href="https://shirleymaxx.github.io/ChimpACT/"
 +          href={
 +            sealMode
 +              ? (video?.source?.url ?? "https://zenodo.org/records/3842040")
 +              : "https://shirleymaxx.github.io/ChimpACT/"
 +          }
-@@ -1244 +1370,4 @@
+@@ -1244 +1386,4 @@
 -          Ma et al., ChimpACT, NeurIPS 2023
 +          {sealMode
 +            ? (video?.source?.title ??
 +              "Ian Durbach · Video classification using deep learning (2020)")
 +            : "Ma et al., ChimpACT, NeurIPS 2023"}
-@@ -1248 +1377,6 @@
+@@ -1248 +1393,6 @@
 -          href="https://creativecommons.org/licenses/by-nc/4.0/"
 +          href={
 +            sealMode
@@ -298,12 +316,12 @@
 +                "https://creativecommons.org/licenses/by/4.0/")
 +              : "https://creativecommons.org/licenses/by-nc/4.0/"
 +          }
-@@ -1252 +1386,3 @@
+@@ -1252 +1402,3 @@
 -          CC BY-NC 4.0（非商用）
 +          {sealMode
 +            ? (video?.source?.license ?? "CC BY 4.0")
 +            : "CC BY-NC 4.0（非商用）"}
-@@ -1255,3 +1391,5 @@
+@@ -1255,3 +1407,5 @@
 -        {pagesMode
 -          ? "公開研究デモ。動画を再圧縮、画像を切り出し、推定BBoxと架空の関係を重ねています。著者による推奨・監修ではありません。事前計算済み結果の再生で、ブラウザ内AI推論やライブカメラではありません。"
 -          : "ローカル研究用。"}
