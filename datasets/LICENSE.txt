@@ -1,0 +1,4 @@
+Animal Re-Identification from Video. Ludmila I. Kuncheva; José Luis Garrido-Labrador; Ismael Ramos-Pérez; Samuel L. Hennessey; Juan J. Rodriguez. Zenodo DOI:10.5281/zenodo.7322821
+Dataset metadata license: CC BY 4.0 https://creativecommons.org/licenses/by/4.0/
+Source videos were obtained from Pixabay under the Pixabay License as stated by the depositors. Additional media conditions: https://pixabay.com/service/license-summary/ ; no standalone media redistribution.
+Changes: three selected videos re-encoded without audio; h1/h2 CSV annotations joined, frame indices converted from1-based to0-based, xywh converted to clipped xyxy; real reference crops extracted; ID profiles and co-occurrence histories generated. Ground truth, not AI inference. Annotation IDs are video-local, not verified cross-video identities or social relationships. No endorsement by dataset authors or media creators is implied.

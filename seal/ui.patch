@@ -1,0 +1,1006 @@
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -35,7 +35,8 @@
+   visibleDemoRelationships,
+   type DemoRelationshipKind,
+   frameAt,
+-  individuals,
++  individuals as registeredIndividuals,
++  sealIndividuals,
+   recognitionMoments,
+   summary,
+   timeLabel,
+@@ -77,16 +78,17 @@
+   reference_available?: boolean;
+   mapped_demo_available?: boolean;
+ };
+-export function App() {
++export function App({ species = "chimp" }: { species?: "chimp" | "seal" }) {
++  const sealMode = species === "seal";
+   const [catalog, setCatalog] = useState<Catalog | null>(null);
+-  const [demo, setDemo] = useState(true);
++  const [demo, setDemo] = useState(!sealMode);
+   const [tidyBoxes, setTidyBoxes] = useState(true);
+   const [minimumConfidence, setMinimumConfidence] = useState(0.15);
+   const [primaryKind, setPrimaryKind] =
+     useState<DemoRelationshipKind>("parent");
+   const demoSeeked = useRef("");
+   const [videoId, setVideoId] = useState("");
+-  const [mode, setMode] = useState<"ai" | "gt">("ai");
++  const [mode, setMode] = useState<"ai" | "gt">(sealMode ? "gt" : "ai");
+   const [bundle, setBundle] = useState<Bundle | null>(null);
+   const [timestamp, setTimestamp] = useState(0);
+   const [paused, setPaused] = useState(true);
+@@ -94,13 +96,23 @@
+   const [selected, setSelected] = useState<string | null>(null);
+   const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
+   const [search, setSearch] = useState("");
+-  const [allRelations, setAllRelations] = useState(false);
++  const [allRelations, setAllRelations] = useState(sealMode);
+   const [overlay, setOverlay] = useState(true);
+   const [viewingMode, setViewingMode] = useState<
+     "watch" | "relations" | "debug"
+   >("relations");
+   const [displaySettings, setDisplaySettings] = useState(
+-    defaultDisplaySettings,
++    sealMode
++      ? {
++          ...defaultDisplaySettings,
++          revealSeconds: 0,
++          lostSeconds: 0,
++          fadeSeconds: 0.001,
++          positionTauSeconds: 0,
++          fastPositionTauSeconds: 0,
++          deadbandRatio: 0,
++        }
++      : defaultDisplaySettings,
+   );
+   const [reducedMotion, setReducedMotion] = useState(
+     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+@@ -114,7 +126,7 @@
+   const effectiveDisplaySettings = useMemo(
+     () => ({
+       ...displaySettings,
+-      reducedMotion,
++      reducedMotion: sealMode || reducedMotion,
+       includePending: viewingMode === "debug",
+     }),
+     [displaySettings, reducedMotion, viewingMode],
+@@ -125,6 +137,15 @@
+   const videoRef = useRef<HTMLVideoElement>(null);
+   const stageRef = useRef<HTMLDivElement>(null);
+   const video = catalog?.videos.find((item) => item.video_id === videoId);
++  const individuals = useMemo(
++    () =>
++      sealMode
++        ? sealIndividuals.filter((animal) =>
++            (video?.track_ids ?? ["seal_track_01"]).includes(animal.id),
++          )
++        : registeredIndividuals,
++    [video, sealMode],
++  );
+   const detectorFloor = catalog?.metrics.detector?.confidence ?? 0.15;
+   const effectiveConfidence = Math.max(minimumConfidence, detectorFloor);
+   useEffect(() => {
+@@ -138,14 +159,17 @@
+   }, [videoId, video]);
+   useEffect(() => {
+     const controller = new AbortController();
+-    fetch(catalogUrl(), { signal: controller.signal })
++    fetch(catalogUrl(sealMode), { signal: controller.signal })
+       .then(async (response) => {
+         if (!response.ok) throw new Error("解析結果の読み込みに失敗しました。");
+         const data = (await response.json()) as Catalog;
+         setCatalog(data);
+         setVideoId(
+-          data.videos.find((item) => item.recording_date === "2016_10_07")
+-            ?.video_id ?? data.videos[0].video_id,
++          data.videos.find((item) =>
++            sealMode
++              ? (item.track_ids?.length ?? 0) > 1
++              : item.recording_date === "2016_10_07",
++          )?.video_id ?? data.videos[0].video_id,
+         );
+       })
+       .catch((problem: Error) => {
+@@ -158,7 +182,7 @@
+     const controller = new AbortController();
+     setBundle(null);
+     setError("");
+-    fetch(bundleUrl(videoId, mode), { signal: controller.signal })
++    fetch(bundleUrl(videoId, mode, sealMode), { signal: controller.signal })
+       .then(async (response) => {
+         if (!response.ok)
+           throw new Error("観測データの読み込みに失敗しました。");
+@@ -299,6 +323,17 @@
+   function seekDemoOnce() {
+     const key = `${demo}:${videoId}`;
+     if (
++      sealMode &&
++      bundle?.video_id === videoId &&
++      videoRef.current &&
++      videoRef.current.readyState >= 1 &&
++      demoSeeked.current !== key
++    ) {
++      videoRef.current.currentTime = video?.preview_time ?? 1.2;
++      demoSeeked.current = key;
++      return;
++    }
++    if (
+       !demo ||
+       !bundle ||
+       !video ||
+@@ -367,6 +402,13 @@
+     setSelectedTrack(null);
+   }
+   function chooseSample(sample: (typeof demoSamples)[number]) {
++    if (sealMode) {
++      setVideoId(sample.id);
++      setSelected(null);
++      setSelectedTrack(null);
++      demoSeeked.current = "";
++      return;
++    }
+     const target = catalog?.videos.find(
+       (item) => item.recording_date === sample.recordingDate,
+     );
+@@ -384,46 +426,79 @@
+     (item) => item.video_id === videoId,
+   );
+   const overlayLabelBoxes: LabelBox[] = [];
++  const samples = sealMode
++    ? (catalog?.videos ?? []).map((item) => ({
++        id: item.video_id,
++        recordingDate: item.recording_date,
++        title: item.strict_split,
++        description:
++          (item.track_ids?.length ?? 1) > 1
++            ? "一時追跡IDと観測の共起を見る"
++            : "実動画の一時追跡IDを見る",
++        primaryKind: "parent" as const,
++        coverId: "",
++      }))
++    : demoSamples;
+   return (
+     <main>
+       <header>
+         <div>
+           <p className="eyebrow">
+-            CHIMPACT · REAL VIDEO /{" "}
++            {sealMode ? "SEAL · MANUAL TRACKING" : "CHIMPACT · REAL VIDEO"} /{" "}
+             {pagesMode ? "PUBLIC RESEARCH DEMO" : "LOCAL RESEARCH"}
+           </p>
+           <h1>動物のつながりを、見つける。</h1>
+           <p>
+-            {demo
+-              ? "3本の実動画から、名前とさまざまな関係を発見するデモ体験。"
+-              : "実映像と観測相関図の検証。AIの不確実さも、そのまま表示します。"}
++            {sealMode
++              ? "実映像の手動BBoxと一時追跡ID。実在の個体名・社会関係は未確認です。"
++              : demo
++                ? "3本の実動画から、名前とさまざまな関係を発見するデモ体験。"
++                : "実映像と観測相関図の検証。AIの不確実さも、そのまま表示します。"}
+           </p>
+         </div>
+         <span className="badge">録画の疑似ライブ</span>
+       </header>
++      <a href={sealMode ? "./index.html" : "./seal.html"}>
++        {sealMode ? "チンパンジー版へ" : "アザラシ版へ"}
++      </a>
++      {sealMode && (
++        <a href="./animals.html" style={{ marginLeft: 16 }}>
++          鯉・ハト・豚へ
++        </a>
++      )}
+       <section className="sample-gallery" aria-label="サンプル動画">
+-        {demoSamples.map((sample) => {
+-          const target = catalog?.videos.find(
+-            (item) => item.recording_date === sample.recordingDate,
++        {samples.map((sample) => {
++          const target = catalog?.videos.find((item) =>
++            sealMode
++              ? item.video_id === sample.id
++              : item.recording_date === sample.recordingDate,
+           );
+           return (
+             <button
+               key={sample.id}
+               className="sample-card"
+               aria-label={`サンプル ${sample.title}`}
+-              aria-pressed={demo && target?.video_id === videoId}
++              aria-pressed={(sealMode || demo) && target?.video_id === videoId}
+               disabled={!target}
+               onClick={() => chooseSample(sample)}
+             >
+               <img
+-                src={referenceUrl(sample.coverId)}
+-                alt="登録用の代表個体画像"
++                src={
++                  sealMode
++                    ? `${import.meta.env.BASE_URL}seal/references/${sample.id}.jpg`
++                    : referenceUrl(sample.coverId)
++                }
++                alt={sealMode ? "実動画のプレビュー" : "登録用の代表個体画像"}
+                 loading="lazy"
+               />
+               <span>
+                 <strong>{sample.title}</strong>
+                 <small>{sample.description}</small>
+-                <small>40秒 · 実動画 · AI／注釈切替</small>
++                <small>
++                  {sealMode && target
++                    ? `${target.frame_count / target.fps}秒 · 実動画 · 手動注釈`
++                    : "40秒 · 実動画 · AI／注釈切替"}
++                </small>
+               </span>
+             </button>
+           );
+@@ -480,7 +555,7 @@
+         </button>
+         <small>
+           {mode === "gt"
+-            ? "正解注釈には検出感度を適用しません。"
++            ? "手動注釈には検出感度を適用しません。"
+             : "右へ動かすほど低信頼度のBBoxを減らします。表示の選別のみで、AIの再推論や識別スコアの変更はしません。"}
+         </small>
+       </section>
+@@ -536,6 +611,7 @@
+           <input
+             type="checkbox"
+             checked={demo}
++            disabled={sealMode}
+             onChange={(event) => {
+               setDemo(event.target.checked);
+               demoSeeked.current = "";
+@@ -610,6 +686,7 @@
+         <div className="segmented">
+           <button
+             aria-pressed={mode === "ai"}
++            disabled={sealMode}
+             onClick={() => {
+               setMode("ai");
+               setSelectedTrack(null);
+@@ -624,7 +701,7 @@
+               setSelectedTrack(null);
+             }}
+           >
+-            正解注釈（GT）
++            {sealMode ? "手動BBox・一時追跡ID" : "正解注釈（GT）"}
+           </button>
+         </div>
+         <label>
+@@ -644,7 +721,7 @@
+           映像にも関係線
+         </label>
+       </section>
+-      <DisplayPlayground settings={effectiveDisplaySettings} />
++      {!sealMode && <DisplayPlayground settings={effectiveDisplaySettings} />}
+       {demo && (
+         <div className="relation-legend" aria-label="関係の種類">
+           {Object.entries(demoRelationshipKinds).map(([kind, style]) => (
+@@ -662,9 +739,11 @@
+         </div>
+       )}
+       <div className={`notice ${mode === "ai" ? "warning" : ""}`}>
+-        {mode === "ai"
+-          ? "AI推定：認識基準を満たさない個体はUnknownです。正解IDは推定処理に使用していません。"
+-          : "GT表示：人手による正解注釈です。AIの成功ではありません。BBoxは0.4秒間隔の注釈を保持表示します。"}
++        {sealMode
++          ? "手動注釈：Seal 01/02/03は各映像内だけの一時追跡IDです。目視BBox（疎な注釈間の補間を含む）を表示します。未注釈の個体や不確かな区間は除外しています。別動画との個体対応・社会関係は未確認です。"
++          : mode === "ai"
++            ? "AI推定：認識基準を満たさない個体はUnknownです。正解IDは推定処理に使用していません。"
++            : "GT表示：人手による正解注釈です。AIの成功ではありません。BBoxは0.4秒間隔の注釈を保持表示します。"}
+       </div>
+       {error && (
+         <div className="error" role="alert">
+@@ -693,7 +772,7 @@
+                 <video
+                   key={videoId}
+                   ref={videoRef}
+-                  src={mediaUrl(videoId)}
++                  src={mediaUrl(videoId, sealMode)}
+                   controls
+                   onPlay={() => setPaused(false)}
+                   onPause={() => setPaused(true)}
+@@ -942,29 +1021,31 @@
+             </span>
+             <span>
+               {displayedObservations.length} 表示 / {observations.length} 検出 ·{" "}
+-              {active.size} 個体識別
++              {active.size} {sealMode ? "一時追跡" : "個体識別"}
+             </span>
+             <button onClick={() => void stageRef.current?.requestFullscreen()}>
+               全画面
+             </button>
+           </div>
+-          <BehaviorTimeline
+-            selected={chosen?.id ?? null}
+-            videoId={videoId}
+-            videoTime={timestamp}
+-            onSelect={chooseIndividual}
+-            onSeek={(time) => {
+-              if (
+-                videoRef.current &&
+-                Number.isFinite(time) &&
+-                Number.isFinite(videoRef.current.duration)
+-              )
+-                videoRef.current.currentTime = Math.min(
+-                  videoRef.current.duration,
+-                  Math.max(0, time),
+-                );
+-            }}
+-          />
++          {!sealMode && (
++            <BehaviorTimeline
++              selected={chosen?.id ?? null}
++              videoId={videoId}
++              videoTime={timestamp}
++              onSelect={chooseIndividual}
++              onSeek={(time) => {
++                if (
++                  videoRef.current &&
++                  Number.isFinite(time) &&
++                  Number.isFinite(videoRef.current.duration)
++                )
++                  videoRef.current.currentTime = Math.min(
++                    videoRef.current.duration,
++                    Math.max(0, time),
++                  );
++              }}
++            />
++          )}
+           <label className="seek">
+             映像時刻
+             <input
+@@ -1007,7 +1088,11 @@
+               </div>
+             </section>
+           )}
+-          <div className="metrics">
++          <div
++            className="metrics"
++            hidden={sealMode}
++            style={sealMode ? { display: "none" } : undefined}
++          >
+             <strong>この映像のAI実測（手動keyframe）</strong>
+             {catalog?.metrics.inference_settings && video && (
+               <span>
+@@ -1058,7 +1143,7 @@
+               Rank-5対象外
+             </span>
+           </div>
+-          <p className="footnote">
++          <p className="footnote" hidden={sealMode}>
+             参照登録日：
+             {catalog?.videos
+               .filter((item) => item.strict_split === "train")
+@@ -1084,7 +1169,7 @@
+             個体を探す
+             <input
+               aria-label="個体検索"
+-              placeholder="Azibo、Swela…"
++              placeholder={sealMode ? "Seal 01…" : "Azibo、Swela…"}
+               value={search}
+               onChange={(event) => setSearch(event.target.value)}
+             />
+@@ -1113,6 +1198,9 @@
+           </div>
+           <div className="graph">
+             <Graph
++              animals={individuals}
++              observations={displayedObservations}
++              video={video}
+               active={active}
+               selected={effectiveSelection}
+               demo={demo}
+@@ -1122,14 +1210,21 @@
+           </div>
+           <div className="profile" aria-live="polite">
+             <h3>{chosen?.name ?? "個体を選ぶと、観測履歴が開きます"}</h3>
+-            <AnimalExperience
+-              selected={chosen?.id ?? null}
+-              demo={demo}
+-              relations={demoRelations}
+-            />
++            {!sealMode && (
++              <AnimalExperience
++                selected={chosen?.id ?? null}
++                demo={demo}
++                relations={demoRelations}
++              />
++            )}
+             {chosen && (
+               <>
+-                <p>チンパンジー · {chosen.id}</p>
++                <p>
++                  {sealMode
++                    ? "アザラシ · この短い映像内だけの一時追跡ID"
++                    : "チンパンジー"}{" "}
++                  · {chosen.id}
++                </p>
+                 {demo && demoCharacters[chosen.id] && (
+                   <p className="demo-character">
+                     <span
+@@ -1162,7 +1257,9 @@
+                     </figure>
+                   )}
+                 <p>
+-                  名前対応はChimpACT公式注釈コード由来。性格・親子・友好関係は登録していません。
++                  {sealMode
++                    ? `${chosen.name}は便宜上の追跡ラベルです。SealIDとの対応・性別・社会関係は未確認です。`
++                    : "名前対応はChimpACT公式注釈コード由来。性格・親子・友好関係は登録していません。"}
+                 </p>
+                 {demo && (
+                   <p className="demo-profile-note">
+@@ -1237,24 +1334,40 @@
+       </div>
+       <footer>
+         <a
+-          href="https://shirleymaxx.github.io/ChimpACT/"
++          href={
++            sealMode
++              ? (video?.source?.url ?? "https://zenodo.org/records/3842040")
++              : "https://shirleymaxx.github.io/ChimpACT/"
++          }
+           target="_blank"
+           rel="noreferrer"
+         >
+-          Ma et al., ChimpACT, NeurIPS 2023
++          {sealMode
++            ? (video?.source?.title ??
++              "Ian Durbach · Video classification using deep learning (2020)")
++            : "Ma et al., ChimpACT, NeurIPS 2023"}
+         </a>{" "}
+         ·{" "}
+         <a
+-          href="https://creativecommons.org/licenses/by-nc/4.0/"
++          href={
++            sealMode
++              ? (video?.source?.license_url ??
++                "https://creativecommons.org/licenses/by/4.0/")
++              : "https://creativecommons.org/licenses/by-nc/4.0/"
++          }
+           target="_blank"
+           rel="noreferrer"
+         >
+-          CC BY-NC 4.0（非商用）
++          {sealMode
++            ? (video?.source?.license ?? "CC BY 4.0")
++            : "CC BY-NC 4.0（非商用）"}
+         </a>{" "}
+         ·
+-        {pagesMode
+-          ? "公開研究デモ。動画を再圧縮、画像を切り出し、推定BBoxと架空の関係を重ねています。著者による推奨・監修ではありません。事前計算済み結果の再生で、ブラウザ内AI推論やライブカメラではありません。"
+-          : "ローカル研究用。"}
++        {sealMode
++          ? "短区間を無音MP4へ変換・再圧縮し、手動BBox・一時追跡IDを追加。作者の推奨を意味しません。共起・近接は画像上の観測で、社会関係は未確認です。AI推論・SealID画像の使用はありません。"
++          : pagesMode
++            ? "公開研究デモ。動画を再圧縮、画像を切り出し、推定BBoxと架空の関係を重ねています。著者による推奨・監修ではありません。事前計算済み結果の再生で、ブラウザ内AI推論やライブカメラではありません。"
++            : "ローカル研究用。"}
+         GTとAIの表示は完全に分離しています。
+       </footer>
+     </main>
+--- a/src/Graph.tsx
++++ b/src/Graph.tsx
+@@ -12,6 +12,9 @@
+   type ReactFlowInstance,
+ } from "@xyflow/react";
+ import { individuals, demoSexSymbol } from "./domain";
++import type { Observation, Video } from "./domain";
++import { graphPosition } from "./graphMotion";
++const emptyObservations: Observation[] = [];
+ 
+ type AnimalNode = Node<
+   {
+@@ -31,7 +34,9 @@
+       style={{ borderColor: data.color }}
+     >
+       <Handle type="target" position={Position.Top} />
+-      <span aria-hidden="true">{data.icon}</span>
++      <span aria-hidden="true">
++        {data.name.startsWith("Seal ") ? "🦭" : data.icon}
++      </span>
+       <strong>
+         {data.name}
+         {data.sex && (
+@@ -57,6 +62,8 @@
+   demo = false,
+   animals = individuals,
+   icon = "🐒",
++  observations = emptyObservations,
++  video,
+ }: {
+   active: Set<string>;
+   selected: string | null;
+@@ -65,12 +72,21 @@
+   demo?: boolean;
+   animals?: typeof individuals;
+   icon?: string;
++  observations?: Observation[];
++  video?: Video;
+ }) {
+   const [nodes, setNodes, onNodesChange] = useNodesState<AnimalNode>([]);
+   const container = useRef<HTMLDivElement>(null);
+   const [instance, setInstance] =
+     useState<ReactFlowInstance<AnimalNode> | null>(null);
+   useEffect(() => {
++    if (!instance) return;
++    const handle = requestAnimationFrame(() => {
++      void instance.fitView({ padding: 0.15 });
++    });
++    return () => cancelAnimationFrame(handle);
++  }, [instance, animals.length]);
++  useEffect(() => {
+     if (!instance || !container.current) return;
+     let timer = 0;
+     const observer = new ResizeObserver(() => {
+@@ -91,7 +107,14 @@
+         ...previous.find((node) => node.id === animal.id),
+         id: animal.id,
+         type: "animal",
+-        position: { x: (index % 2) * 190, y: Math.floor(index / 2) * 145 },
++        position: observations.some((row) => row.individual_id === animal.id)
++          ? graphPosition(
++              index,
++              observations.find((row) => row.individual_id === animal.id),
++              video,
++            )
++          : (previous.find((node) => node.id === animal.id)?.position ??
++            graphPosition(index)),
+         data: {
+           name: animal.name,
+           color: animal.color,
+@@ -103,13 +126,25 @@
+         ariaLabel: `${animal.name}のプロフィール`,
+       })),
+     );
+-  }, [active, selected, setNodes, demo, animals, icon]);
++  }, [active, selected, setNodes, demo, animals, icon, observations, video]);
+   return (
+-    <div ref={container} style={{ width: "100%", height: "100%" }}>
++    <div
++      ref={container}
++      aria-label="映像に連動する相関図"
++      style={{ width: "100%", height: "100%" }}
++    >
+       <ReactFlow
+         nodes={nodes}
+         onNodesChange={onNodesChange}
+-        edges={edges}
++        edges={edges.map((edge) => ({
++          ...edge,
++          animated: active.has(edge.source) && active.has(edge.target),
++          style: {
++            ...edge.style,
++            opacity:
++              active.has(edge.source) && active.has(edge.target) ? 1 : 0.35,
++          },
++        }))}
+         nodeTypes={nodeTypes}
+         onInit={setInstance}
+         onNodeClick={(_event, node) => onSelect(node.id)}
+--- a/src/domain.ts
++++ b/src/domain.ts
+@@ -34,6 +34,9 @@
+   strict_split: string;
+   recording_date: string;
+   annotation_stride?: number;
++  track_ids?: string[];
++  preview_time?: number;
++  source?: { title: string; url: string; license: string; license_url: string };
+ };
+ export type Relation = {
+   individual_a: string;
+@@ -46,6 +49,11 @@
+   frames: Frame[];
+   relations: Relation[];
+ };
++export const sealIndividuals = [
++  { id: "seal_track_01", name: "Seal 01", color: "#5a927c" },
++  { id: "seal_track_02", name: "Seal 02", color: "#6295b8" },
++  { id: "seal_track_03", name: "Seal 03", color: "#c17b91" },
++];
+ export const individuals = animals;
+ export const demoRelationshipKinds = {
+   parent: { label: "親子", color: "#f6bd60", directed: true },
+@@ -115,10 +123,10 @@
+ ];
+ export type DemoRelationship = {
+   id: string;
++  label?: string;
+   individual_a: string;
+   individual_b: string;
+   kind: DemoRelationshipKind;
+-  label?: string;
+ };
+ export function filterDuplicateUnknown(observations: Observation[]) {
+   const known = observations.filter((row) => row.individual_id !== null);
+@@ -250,10 +258,8 @@
+   )
+     return null;
+   let index = Math.floor(timestamp * video.fps + 1e-7);
+-  if (bundle.mode === "gt") {
+-    const stride = video.annotation_stride ?? 10;
+-    index = Math.floor(index / stride) * stride;
+-  }
++  const stride = video.annotation_stride ?? 10;
++  if (bundle.mode === "gt") index = Math.floor(index / stride) * stride;
+   return bundle.frames.find((frame) => frame.frame_index === index) ?? null;
+ }
+ export function summary(relation: Relation, timestamp: number) {
+@@ -283,7 +289,9 @@
+ }
+ export function displayName(identity: string | null) {
+   return (
+-    individuals.find((animal) => animal.id === identity)?.name ?? "Unknown"
++    [...individuals, ...sealIndividuals].find(
++      (animal) => animal.id === identity,
++    )?.name ?? "Unknown"
+   );
+ }
+ 
+--- a/src/dataSource.ts
++++ b/src/dataSource.ts
+@@ -1,17 +1,22 @@
+ export const pagesMode = import.meta.env.MODE === "pages";
+-export function catalogUrl() {
++export const sealMode =
++  typeof location !== "undefined" && location.pathname.endsWith("/seal.html");
++export function catalogUrl(seal = sealMode) {
++  const dataset = seal ? "seal/" : "";
+   return pagesMode
+-    ? `${import.meta.env.BASE_URL}data/catalog.json`
++    ? `${import.meta.env.BASE_URL}${dataset}data/catalog.json`
+     : "/api/catalog";
+ }
+-export function bundleUrl(videoId: string, mode: "ai" | "gt") {
++export function bundleUrl(videoId: string, mode: "ai" | "gt", seal = sealMode) {
++  const dataset = seal ? "seal/" : "";
+   return pagesMode
+-    ? `${import.meta.env.BASE_URL}data/${videoId}.${mode}.json`
++    ? `${import.meta.env.BASE_URL}${dataset}data/${videoId}.${mode}.json`
+     : `/api/videos/${videoId}/${mode}`;
+ }
+-export function mediaUrl(videoId: string) {
++export function mediaUrl(videoId: string, seal = sealMode) {
++  const dataset = seal ? "seal/" : "";
+   return pagesMode
+-    ? `${import.meta.env.BASE_URL}media/${videoId}.mp4`
++    ? `${import.meta.env.BASE_URL}${dataset}media/${videoId}.mp4`
+     : `/api/media/${videoId}`;
+ }
+ export function referenceUrl(individualId: string, index?: number) {
+--- a/src/DatasetViewer.tsx
++++ b/src/DatasetViewer.tsx
+@@ -16,6 +16,7 @@
+ 
+ const speciesOptions = {
+   chimp: "チンパンジー",
++  seal: "アザラシ",
+   koi: "鯉",
+   pigeon: "ハト",
+   pig: "豚",
+@@ -28,14 +29,6 @@
+   `${import.meta.env.BASE_URL}datasets/${path}`;
+ type DatasetBundle = Bundle & {
+   video: Video;
+-  inference?: {
+-    metrics: {
+-      precision: number;
+-      recall: number;
+-      end_to_end_known_accuracy: number;
+-    };
+-    device: string;
+-  };
+   individuals: {
+     id: string;
+     name: string;
+@@ -46,7 +39,16 @@
+ };
+ 
+ export function DemoHub() {
+-  const [species, setSpecies] = useState<keyof typeof speciesOptions>("chimp");
++  const [species, setSpecies] = useState<keyof typeof speciesOptions>(() => {
++    const requested = new URLSearchParams(location.search).get("species");
++    if (requested && requested in speciesOptions)
++      return requested as keyof typeof speciesOptions;
++    return location.pathname.endsWith("/seal.html")
++      ? "seal"
++      : location.pathname.endsWith("/animals.html")
++        ? "koi"
++        : "chimp";
++  });
+   return (
+     <>
+       <nav className="species-switch panel" aria-label="動物種の切り替え">
+@@ -55,9 +57,13 @@
+           <select
+             aria-label="動物種"
+             value={species}
+-            onChange={(event) =>
+-              setSpecies(event.target.value as keyof typeof speciesOptions)
+-            }
++            onChange={(event) => {
++              const target = event.target.value as keyof typeof speciesOptions;
++              const url = new URL(location.href);
++              url.searchParams.set("species", target);
++              history.replaceState(null, "", url);
++              setSpecies(target);
++            }}
+           >
+             {Object.entries(speciesOptions).map(([id, name]) => (
+               <option key={id} value={id}>
+@@ -69,11 +75,39 @@
+         <span>
+           {species === "chimp"
+             ? "既存のAI推定／注釈デモ"
+-            : "実映像＋AI推定／正解注釈（GT）"}
++            : species === "seal"
++              ? "実映像＋手動追跡・社会関係は未確認"
++              : "実映像＋正解注釈（GT）・AI推論ではありません"}
+         </span>
+       </nav>
+-      {species === "chimp" ? (
+-        <App />
++      {species !== "chimp" && species !== "seal" && (
++        <section className="sample-gallery" aria-label="サンプル動画">
++          {Object.keys(icons).map((key) => {
++            const target = key as keyof typeof icons;
++            return (
++              <button
++                key={target}
++                className="sample-card"
++                aria-pressed={species === target}
++                onClick={() => setSpecies(target)}
++              >
++                <img
++                  src={datasetUrl(`references/${target}-poster.jpg`)}
++                  alt={`${speciesOptions[target]}の実動画`}
++                />
++                <span>
++                  <strong>
++                    {icons[target]} {speciesOptions[target]}
++                  </strong>
++                  <small>実動画の注釈IDと共起を見る</small>
++                </span>
++              </button>
++            );
++          })}
++        </section>
++      )}
++      {species === "chimp" || species === "seal" ? (
++        <App key={species} species={species} />
+       ) : (
+         <DatasetViewer key={species} species={species} />
+       )}
+@@ -82,7 +116,7 @@
+ }
+ 
+ function DatasetViewer({ species }: { species: keyof typeof icons }) {
+-  const [mode, setMode] = useState<"ai" | "gt">("ai");
++  const [mode, setMode] = useState<"ai" | "gt">("gt");
+   const [bundle, setBundle] = useState<DatasetBundle | null>(null);
+   const [error, setError] = useState("");
+   const [time, setTime] = useState(0);
+@@ -226,7 +260,11 @@
+         </span>
+       </header>
+       <div className="transport">
+-        <button aria-pressed={mode === "ai"} onClick={() => setMode("ai")}>
++        <button
++          aria-pressed={mode === "ai"}
++          disabled
++          onClick={() => setMode("ai")}
++        >
+           AI推定
+         </button>
+         <button aria-pressed={mode === "gt"} onClick={() => setMode("gt")}>
+@@ -238,18 +276,6 @@
+           ? "録画をYOLO-World＋ByteTrack＋DINOv2で解析したAI推定です。個体参照は動画前半から登録しています。Unknownは個体未確定で、名前や関係性を割り当てません。ブラウザ内のライブ推論ではありません。"
+           : "BBoxと個体IDは人手による正解注釈です。AI検出・AI識別の結果ではありません。IDは本動画内だけの対応です。"}
+       </p>
+-      {mode === "ai" && bundle?.inference && (
+-        <p className="footnote" aria-label="AI評価結果">
+-          動画後半の評価：検出Precision{" "}
+-          {(bundle.inference.metrics.precision * 100).toFixed(1)}%・Recall{" "}
+-          {(bundle.inference.metrics.recall * 100).toFixed(1)}%・
+-          登録個体の検出＋識別正答率{" "}
+-          {(bundle.inference.metrics.end_to_end_known_accuracy * 100).toFixed(
+-            1,
+-          )}
+-          %。 同一動画内の時系列分割で、別動画への汎化評価ではありません。
+-        </p>
+-      )}
+       {error && (
+         <p className="error" role="alert">
+           {error}
+@@ -261,10 +287,7 @@
+             <div className="section-heading">
+               <h2>いま、画面のなかに</h2>
+               <span>
+-                {mode === "ai"
+-                  ? `${displayed.length}追跡・${active.size}個体識別`
+-                  : `${active.size}個体`}{" "}
+-                · {time.toFixed(1)}秒
++                {active.size}個体 · {time.toFixed(1)}秒
+               </span>
+             </div>
+             <div className="stage" style={{ aspectRatio: "16/9" }}>
+@@ -288,11 +311,7 @@
+                 className="overlay"
+                 viewBox={`0 0 ${bundle.video.width} ${bundle.video.height}`}
+                 preserveAspectRatio="xMidYMid meet"
+-                aria-label={
+-                  mode === "ai"
+-                    ? "AIバウンディングボックス"
+-                    : "GTバウンディングボックス"
+-                }
++                aria-label="GTバウンディングボックス"
+               >
+                 {lines && (
+                   <RelationshipOverlay
+@@ -302,9 +321,6 @@
+                     displayWidth={width}
+                     names={names}
+                     observed
+-                    observedLabel={
+-                      mode === "ai" ? "AI推定の共起線" : "GT注釈の共起線"
+-                    }
+                   />
+                 )}
+                 {painted.map(({ row, animal }) => {
+@@ -434,6 +450,8 @@
+             </label>
+             <div className="graph">
+               <Graph
++                observations={displayed}
++                video={bundle.video}
+                 active={active}
+                 selected={selected}
+                 animals={graphAnimals}
+--- a/src/RelationshipOverlay.tsx
++++ b/src/RelationshipOverlay.tsx
+@@ -21,7 +21,6 @@
+   displayWidth,
+   names,
+   observed = false,
+-  observedLabel = "GT注釈の共起線",
+ }: {
+   observations: (Observation & { opacity?: number })[];
+   relations: DemoRelationship[];
+@@ -29,14 +28,13 @@
+   displayWidth: number;
+   names?: Record<string, string>;
+   observed?: boolean;
+-  observedLabel?: string;
+ }) {
+   const unit = video.width / Math.max(1, displayWidth);
+   return (
+     <g
+       className="demo-relationships"
+       pointerEvents="none"
+-      aria-label={observed ? observedLabel : "仮設定の関係矢印"}
++      aria-label={observed ? "GT注釈の共起線" : "仮設定の関係矢印"}
+     >
+       <defs>
+         {Object.keys(demoRelationshipKinds).map((kind) => (
+--- a/src/style.css
++++ b/src/style.css
+@@ -6,21 +6,6 @@
+ body {
+   margin: 0;
+ }
+-.species-switch {
+-  max-width: 1440px;
+-  margin: 16px auto 0;
+-  padding: 12px;
+-  display: flex;
+-  flex-wrap: wrap;
+-  gap: 12px;
+-  box-sizing: border-box;
+-}
+-.dataset-reference {
+-  max-width: 100%;
+-  max-height: 180px;
+-  object-fit: contain;
+-  border-radius: 12px;
+-}
+ .sensitivity {
+   display: flex;
+   align-items: center;
+@@ -646,3 +631,28 @@
+     flex-wrap: wrap;
+   }
+ }
++.species-switch {
++  margin: 18px 30px 0;
++  display: flex;
++  flex-wrap: wrap;
++  align-items: center;
++  gap: 18px;
++  font-size: 13px;
++}
++.dataset-reference {
++  width: 100%;
++  max-height: 180px;
++  object-fit: contain;
++  border-radius: 12px;
++  background: #edf1e7;
++}
++@media (prefers-reduced-motion: no-preference) {
++  .graph .react-flow__node {
++    transition: transform 180ms linear;
++  }
++}
++@media (prefers-reduced-motion: reduce) {
++  .react-flow__edge.animated path {
++    animation: none;
++  }
++}
+--- /dev/null
++++ b/src/graphMotion.ts
+@@ -0,0 +1,18 @@
++import type { Observation, Video } from "./domain";
++
++export function graphPosition(
++  index: number,
++  observation?: Observation,
++  video?: Video,
++) {
++  const position = { x: (index % 2) * 230, y: Math.floor(index / 2) * 160 };
++  if (!observation || !video || video.width <= 0 || video.height <= 0)
++    return position;
++  const [left, top, right, bottom] = observation.bbox;
++  const centerX = Math.max(0, Math.min(1, (left + right) / (2 * video.width)));
++  const centerY = Math.max(0, Math.min(1, (top + bottom) / (2 * video.height)));
++  return {
++    x: position.x + (centerX - 0.5) * 64,
++    y: position.y + (centerY - 0.5) * 48,
++  };
++}
+--- /dev/null
++++ b/tests/graphMotion.test.ts
+@@ -0,0 +1,43 @@
++import { describe, expect, it } from "vitest";
++import { graphPosition } from "../src/graphMotion";
++import type { Observation, Video } from "../src/domain";
++const video: Video = {
++  video_id: "sample",
++  width: 100,
++  height: 100,
++  fps: 10,
++  frame_count: 100,
++  recording_date: "",
++  strict_split: "gt",
++};
++const row: Observation = {
++  timestamp: 0,
++  track_id: "1",
++  individual_id: "1",
++  bbox: [0, 0, 20, 20],
++  confidence: null,
++};
++describe("video-synchronized graph", () => {
++  it("moves with the box and reproduces the same position after seeking", () => {
++    const start = graphPosition(0, row, video);
++    const end = graphPosition(0, { ...row, bbox: [80, 80, 100, 100] }, video);
++    expect(end.x).toBeGreaterThan(start.x);
++    expect(end.y).toBeGreaterThan(start.y);
++    expect(graphPosition(0, row, video)).toEqual(start);
++  });
++  it("normalizes different video resolutions", () => {
++    expect(
++      graphPosition(
++        0,
++        { ...row, bbox: [0, 0, 40, 40] },
++        { ...video, width: 200, height: 200 },
++      ),
++    ).toEqual(graphPosition(0, row, video));
++  });
++  it("keeps unobserved and malformed-size inputs finite", () => {
++    expect(graphPosition(3)).toEqual({ x: 230, y: 160 });
++    expect(graphPosition(3, row, { ...video, width: 0 })).toEqual(
++      graphPosition(3),
++    );
++  });
++});
