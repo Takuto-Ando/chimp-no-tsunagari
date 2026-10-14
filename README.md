@@ -3,6 +3,7 @@
 チンパンジー・アザラシ・鯉・ハト・豚を同じ入口の「動物種」で切り替える非商用研究デモです。AIライブ推論ではありません。チンパンジーの展示用社会関係は架空で、ほかの動物は動画内の追跡ID・注釈IDと観測共起を表示します。
 
 公開入口: https://takuto-ando.github.io/chimp-no-tsunagari/ 。`?species=seal` などで選択動物を指定できます。`seal.html` / `animals.html` は互換入口です。
+アザラシ3・鯉9・ハト17・豚26の全55件の追跡／注釈IDに展示用の仮名を付けています（例: しお・なぎ・みなと）。一覧は `data/displayNames.json`。各種の配列はID番号の1始まり順です。実在の名前、性別、性格、社会関係を示しません。動画間の同一性を意味せず、元のID・BBox・共起計算は変更していません。チンパンジーの既存名は保持しています。
 相関図のカードは動画のBBox中心の変化に追従し、画面内の2個体を結ぶ辺をアニメーション表示します。図の配置は読みやすさを保つ模式配置で、物理座標・社会関係の推定ではありません。シークに追従し、画面外のカードは最後の位置を保持します。動きを減らす端末設定ではtransitionと辺アニメーションを抑えます。
 
 ## Attribution / Media license
@@ -77,6 +78,8 @@ http://127.0.0.1:5189/animals.html で動物種・動画カードを切り替え
 
 統合・公開milestone: 5種をページ再読み込みなしで切替、選択状態をURLへ保持。相関図の動きを動画時刻・BBoxへ接続。既存公開commit `69ca7ba` をmergeして履歴を保全し、Pages対象の `codex/20261013-pages` へfast-forward pushする。force push・新規学習・LLM APIは使用しない。
 検証pass: TypeScript/Vite、45テスト、5種の再読み込みなしの切替、動く相関図・シーク復帰・一時停止・再生、動物種のURL保存、19秒動画、スマホ表示、JS/HTTPエラーなし。既存チンパンジー3動画のAI/GT・プロフィール・全画面・3画面幅も既存smokeでpass。画像上の運動に連動する模式図であり、社会関係やBBox精度の評価ではありません。
+仮名表示milestone: アザラシ3・鯉9・ハト17・豚26の計55追跡／注釈IDに展示用の仮名を設定。元IDとチンパンジーの名前は保持。検証pass: 45テスト、TypeScript/Vite、全55仮名のBBox・個体カード・相関図表示、仮名の注意書き、チンパンジー表示、JS/HTTPエラーなし。
+
 ## Additional GT animal demos
 
 datasets/ contains koi, pigeons and pigs from Animal Re-Identification from Video, https://zenodo.org/records/7322821 . Dataset annotations: CC BY 4.0; original stock videos: Pixabay License. These media are integrated into the interactive GT viewer, not offered as standalone downloads. Individual IDs are video-local ground truth, not AI predictions. Only observed co-occurrence/proximity is shown, with no invented social relationships or biographies. Full authors, provenance and modifications: datasets/LICENSE.txt. The original ChimpACT files keep their separate CC BY-NC 4.0 license.

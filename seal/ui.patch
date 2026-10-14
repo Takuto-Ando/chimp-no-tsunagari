@@ -158,7 +158,7 @@
 -          ? "AI推定：認識基準を満たさない個体はUnknownです。正解IDは推定処理に使用していません。"
 -          : "GT表示：人手による正解注釈です。AIの成功ではありません。BBoxは0.4秒間隔の注釈を保持表示します。"}
 +        {sealMode
-+          ? "手動注釈：Seal 01/02/03は各映像内だけの一時追跡IDです。目視BBox（疎な注釈間の補間を含む）を表示します。未注釈の個体や不確かな区間は除外しています。別動画との個体対応・社会関係は未確認です。"
++          ? "表示名は展示用の仮名で、実在の名前ではありません。各映像内だけの一時追跡IDに付けています。目視BBox（補間を含む）を表示し、未注釈・不確かな区間は除外しています。別動画との個体対応・社会関係は未確認です。"
 +          : mode === "ai"
 +            ? "AI推定：認識基準を満たさない個体はUnknownです。正解IDは推定処理に使用していません。"
 +            : "GT表示：人手による正解注釈です。AIの成功ではありません。BBoxは0.4秒間隔の注釈を保持表示します。"}
@@ -217,12 +217,13 @@
 +          <p className="footnote" hidden={sealMode}>
 @@ -1087 +1172 @@
 -              placeholder="Azibo、Swela…"
-+              placeholder={sealMode ? "Seal 01…" : "Azibo、Swela…"}
-@@ -1115,0 +1201,3 @@
++              placeholder={sealMode ? "しお、なぎ、みなと…" : "Azibo、Swela…"}
+@@ -1115,0 +1201,4 @@
++              icon={sealMode ? "🦭" : "🐒"}
 +              animals={individuals}
 +              observations={displayedObservations}
 +              video={video}
-@@ -1125,5 +1213,7 @@
+@@ -1125,5 +1214,7 @@
 -            <AnimalExperience
 -              selected={chosen?.id ?? null}
 -              demo={demo}
@@ -235,7 +236,7 @@
 +                relations={demoRelations}
 +              />
 +            )}
-@@ -1132 +1222,6 @@
+@@ -1132 +1223,6 @@
 -                <p>チンパンジー · {chosen.id}</p>
 +                <p>
 +                  {sealMode
@@ -243,25 +244,25 @@
 +                    : "チンパンジー"}{" "}
 +                  · {chosen.id}
 +                </p>
-@@ -1165 +1260,3 @@
+@@ -1165 +1261,3 @@
 -                  名前対応はChimpACT公式注釈コード由来。性格・親子・友好関係は登録していません。
 +                  {sealMode
-+                    ? `${chosen.name}は便宜上の追跡ラベルです。SealIDとの対応・性別・社会関係は未確認です。`
++                    ? `「${chosen.name}」は展示用の仮名です。実在名ではなく、この映像内だけの一時追跡IDに付けています。SealIDとの対応・性別・社会関係は未確認です。`
 +                    : "名前対応はChimpACT公式注釈コード由来。性格・親子・友好関係は登録していません。"}
-@@ -1240 +1337,5 @@
+@@ -1240 +1338,5 @@
 -          href="https://shirleymaxx.github.io/ChimpACT/"
 +          href={
 +            sealMode
 +              ? (video?.source?.url ?? "https://zenodo.org/records/3842040")
 +              : "https://shirleymaxx.github.io/ChimpACT/"
 +          }
-@@ -1244 +1345,4 @@
+@@ -1244 +1346,4 @@
 -          Ma et al., ChimpACT, NeurIPS 2023
 +          {sealMode
 +            ? (video?.source?.title ??
 +              "Ian Durbach · Video classification using deep learning (2020)")
 +            : "Ma et al., ChimpACT, NeurIPS 2023"}
-@@ -1248 +1352,6 @@
+@@ -1248 +1353,6 @@
 -          href="https://creativecommons.org/licenses/by-nc/4.0/"
 +          href={
 +            sealMode
@@ -269,12 +270,12 @@
 +                "https://creativecommons.org/licenses/by/4.0/")
 +              : "https://creativecommons.org/licenses/by-nc/4.0/"
 +          }
-@@ -1252 +1361,3 @@
+@@ -1252 +1362,3 @@
 -          CC BY-NC 4.0（非商用）
 +          {sealMode
 +            ? (video?.source?.license ?? "CC BY 4.0")
 +            : "CC BY-NC 4.0（非商用）"}
-@@ -1255,3 +1366,5 @@
+@@ -1255,3 +1367,5 @@
 -        {pagesMode
 -          ? "公開研究デモ。動画を再圧縮、画像を切り出し、推定BBoxと架空の関係を重ねています。著者による推奨・監修ではありません。事前計算済み結果の再生で、ブラウザ内AI推論やライブカメラではありません。"
 -          : "ローカル研究用。"}
@@ -341,28 +342,30 @@
 +        }))}
 --- a/src/domain.ts
 +++ b/src/domain.ts
-@@ -36,0 +37,3 @@
+@@ -1,0 +2 @@
++import displayNames from "./data/displayNames.json";
+@@ -36,0 +38,3 @@
 +  track_ids?: string[];
 +  preview_time?: number;
 +  source?: { title: string; url: string; license: string; license_url: string };
-@@ -48,0 +52,5 @@
+@@ -48,0 +53,5 @@
 +export const sealIndividuals = [
-+  { id: "seal_track_01", name: "Seal 01", color: "#5a927c" },
-+  { id: "seal_track_02", name: "Seal 02", color: "#6295b8" },
-+  { id: "seal_track_03", name: "Seal 03", color: "#c17b91" },
++  { id: "seal_track_01", name: displayNames.seal[0], color: "#5a927c" },
++  { id: "seal_track_02", name: displayNames.seal[1], color: "#6295b8" },
++  { id: "seal_track_03", name: displayNames.seal[2], color: "#c17b91" },
 +];
-@@ -117,0 +126 @@
+@@ -117,0 +127 @@
 +  label?: string;
-@@ -121 +129,0 @@
+@@ -121 +130,0 @@
 -  label?: string;
-@@ -253,4 +261,2 @@
+@@ -253,4 +262,2 @@
 -  if (bundle.mode === "gt") {
 -    const stride = video.annotation_stride ?? 10;
 -    index = Math.floor(index / stride) * stride;
 -  }
 +  const stride = video.annotation_stride ?? 10;
 +  if (bundle.mode === "gt") index = Math.floor(index / stride) * stride;
-@@ -286 +292,3 @@
+@@ -286 +293,3 @@
 -    individuals.find((animal) => animal.id === identity)?.name ?? "Unknown"
 +    [...individuals, ...sealIndividuals].find(
 +      (animal) => animal.id === identity,
@@ -394,9 +397,11 @@
 +    ? `${import.meta.env.BASE_URL}${dataset}media/${videoId}.mp4`
 --- a/src/DatasetViewer.tsx
 +++ b/src/DatasetViewer.tsx
-@@ -18,0 +19 @@
+@@ -15,0 +16 @@
++import { displayAlias } from "./displayAlias";
+@@ -18,0 +20 @@
 +  seal: "アザラシ",
-@@ -31,8 +31,0 @@
+@@ -31,8 +32,0 @@
 -  inference?: {
 -    metrics: {
 -      precision: number;
@@ -405,7 +410,7 @@
 -    };
 -    device: string;
 -  };
-@@ -49 +42,10 @@
+@@ -49 +43,10 @@
 -  const [species, setSpecies] = useState<keyof typeof speciesOptions>("chimp");
 +  const [species, setSpecies] = useState<keyof typeof speciesOptions>(() => {
 +    const requested = new URLSearchParams(location.search).get("species");
@@ -417,7 +422,7 @@
 +        ? "koi"
 +        : "chimp";
 +  });
-@@ -58,3 +60,7 @@
+@@ -58,3 +61,7 @@
 -            onChange={(event) =>
 -              setSpecies(event.target.value as keyof typeof speciesOptions)
 -            }
@@ -428,12 +433,12 @@
 +              history.replaceState(null, "", url);
 +              setSpecies(target);
 +            }}
-@@ -72 +78,3 @@
+@@ -72 +79,3 @@
 -            : "実映像＋AI推定／正解注釈（GT）"}
 +            : species === "seal"
 +              ? "実映像＋手動追跡・社会関係は未確認"
 +              : "実映像＋正解注釈（GT）・AI推論ではありません"}
-@@ -75,2 +83,28 @@
+@@ -75,2 +84,28 @@
 -      {species === "chimp" ? (
 -        <App />
 +      {species !== "chimp" && species !== "seal" && (
@@ -464,17 +469,25 @@
 +      )}
 +      {species === "chimp" || species === "seal" ? (
 +        <App key={species} species={species} />
-@@ -85 +119 @@
+@@ -85 +120 @@
 -  const [mode, setMode] = useState<"ai" | "gt">("ai");
 +  const [mode, setMode] = useState<"ai" | "gt">("gt");
-@@ -229 +263,5 @@
+@@ -103,0 +139,4 @@
++        data.individuals = data.individuals.map((animal) => ({
++          ...animal,
++          name: displayAlias(animal.id) ?? animal.name,
++        }));
+@@ -229 +268,5 @@
 -        <button aria-pressed={mode === "ai"} onClick={() => setMode("ai")}>
 +        <button
 +          aria-pressed={mode === "ai"}
 +          disabled
 +          onClick={() => setMode("ai")}
 +        >
-@@ -241,12 +278,0 @@
+@@ -239 +282 @@
+-          : "BBoxと個体IDは人手による正解注釈です。AI検出・AI識別の結果ではありません。IDは本動画内だけの対応です。"}
++          : "表示名は展示用の仮名で、実在の名前ではありません。BBoxと個体IDは人手注釈です。AI識別ではなく、IDは本動画内だけの対応です。"}
+@@ -241,12 +283,0 @@
 -      {mode === "ai" && bundle?.inference && (
 -        <p className="footnote" aria-label="AI評価結果">
 -          動画後半の評価：検出Precision{" "}
@@ -487,26 +500,31 @@
 -          %。 同一動画内の時系列分割で、別動画への汎化評価ではありません。
 -        </p>
 -      )}
-@@ -264,4 +290 @@
+@@ -264,4 +295 @@
 -                {mode === "ai"
 -                  ? `${displayed.length}追跡・${active.size}個体識別`
 -                  : `${active.size}個体`}{" "}
 -                · {time.toFixed(1)}秒
 +                {active.size}個体 · {time.toFixed(1)}秒
-@@ -291,5 +314 @@
+@@ -291,5 +319 @@
 -                aria-label={
 -                  mode === "ai"
 -                    ? "AIバウンディングボックス"
 -                    : "GTバウンディングボックス"
 -                }
 +                aria-label="GTバウンディングボックス"
-@@ -305,3 +323,0 @@
+@@ -305,3 +328,0 @@
 -                    observedLabel={
 -                      mode === "ai" ? "AI推定の共起線" : "GT注釈の共起線"
 -                    }
-@@ -436,0 +453,2 @@
+@@ -436,0 +458,2 @@
 +                observations={displayed}
 +                video={bundle.video}
+@@ -460,0 +484,4 @@
++                <p>
++                  表示名「{chosen.name}
++                  」は展示用の仮名です。実在の名前や性格を示しません。
++                </p>
 --- a/src/RelationshipOverlay.tsx
 +++ b/src/RelationshipOverlay.tsx
 @@ -24 +23,0 @@
@@ -627,3 +645,77 @@
 +    );
 +  });
 +});
+--- /dev/null
++++ b/src/displayAlias.ts
+@@ -0,0 +1,7 @@
++import names from "./data/displayNames.json";
++
++export function displayAlias(identity: string) {
++  const match = identity.match(/^zenodo7322821_(koi|pigeon|pig)_(\d+)$/);
++  if (!match) return undefined;
++  return names[match[1] as "koi" | "pigeon" | "pig"][Number(match[2]) - 1];
++}
+--- /dev/null
++++ b/src/data/displayNames.json
+@@ -0,0 +1,61 @@
++{
++  "seal": ["しお", "なぎ", "みなと"],
++  "koi": [
++    "あかね",
++    "こはく",
++    "きん",
++    "べに",
++    "しろ",
++    "にしき",
++    "ひかり",
++    "ゆず",
++    "あお"
++  ],
++  "pigeon": [
++    "そら",
++    "くも",
++    "つばさ",
++    "はね",
++    "ぽっぽ",
++    "こもれび",
++    "かぜ",
++    "ひなた",
++    "あさ",
++    "ゆう",
++    "ほし",
++    "つき",
++    "あめ",
++    "にじ",
++    "こだま",
++    "すず",
++    "ふわ"
++  ],
++  "pig": [
++    "もも",
++    "さくら",
++    "くるみ",
++    "むぎ",
++    "こめ",
++    "まめ",
++    "あずき",
++    "きなこ",
++    "だいず",
++    "ごま",
++    "みそ",
++    "もち",
++    "だんご",
++    "おはぎ",
++    "まんじゅう",
++    "ぷりん",
++    "あんず",
++    "りんご",
++    "いちご",
++    "すもも",
++    "うめ",
++    "なし",
++    "びわ",
++    "かりん",
++    "なつめ",
++    "ぽてと"
++  ]
++}

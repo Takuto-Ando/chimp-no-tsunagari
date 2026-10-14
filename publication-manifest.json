@@ -1,7 +1,8 @@
 {
   ".nojekyll": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-  "README.md": "95c5975163217335331a1df94ada4c61f187700cc96f3eda34f84f43d112f220",
-  "animals.html": "c3f823a8d26617a34005fd6d9436d4eefb1d8a1fbf683ad3aa5edea42c5cdbcf",
+  "README.md": "1800097d6273f405880b74156bd3949806c9fbe03f1fdbcfaee0846a20ae1edc",
+  "animals.html": "90f0dc17ffa1f9f4ed9671568edfceafd78f34608177f675cd36fcd984709891",
+  "assets/index-Bavja6RY.js": "68ed0e4d9e95d9093be9e9053057f4a9b84a92cf83bf5f6215e8e43da89b64a3",
   "assets/index-CNUSP3Yk.js": "dbef8eabc3a518592d2047167ca0ad1a16842b721a1dd81b07789bf585c4e0a5",
   "assets/index-D5r33qKE.css": "8df46acf845bc2cd562008e870a9b349a909f2df6c648917b82a307caae6e242",
   "assets/index-DihalOqw.css": "6abe650d7a073e39b11d1259858c838dfa00e55b981e68a39cf799339fc23385",
@@ -13,6 +14,7 @@
   "data/Azibo_ObsChimp_2017_05_27_b_clip_4000_5000.ai.json": "dbcd57760d31de20d157e25c23a8d6ad1e9923d6dbd9dafd2b3212cbaf5dce3e",
   "data/Azibo_ObsChimp_2017_05_27_b_clip_4000_5000.gt.json": "a04be6d7cf4adee61b2963fbb1ef9ce56a6e6bd7fc91dcae62be2dfc35023157",
   "data/catalog.json": "1da5007e8e1aacdb2499954cca4c6a231dd459e83d702efeab212664abcc6ba2",
+  "data/displayNames.json": "ae098702f1f606a3baa38da4743849f6572dd511333b78a6b37d37a34de1d7bc",
   "datasets/LICENSE.txt": "bc306abc38586d91945c7810cb555c340782f64ee876d4b62500e3f3f0ecb4bc",
   "datasets/catalog.json": "3611c4b1abadc37fd6acc18e9ecd9140176f66e18d275d5ad8ec14aa4760469f",
   "datasets/koi.gt.json": "2698ffe0923a0c050ad14e05d3fb08833d8acc9b0c3c71a76190611337ac64b7",
@@ -81,7 +83,7 @@
   "downloads/sample-01-mapped-16x9.mp4": "11947af9e7722a1faa43834db513f451499404c6eb66b851a39725062d3f1791",
   "downloads/sample-02-mapped-16x9.mp4": "c1d17735c1f6334af79c0ddffdafc80141a116421f0f80a784e11aca57c2524d",
   "downloads/sample-03-mapped-16x9.mp4": "b4af92c4f99ff625ee616aa61762ae3bb1cfdda42ab26c24a9503a448a165a05",
-  "index.html": "ae499048375a7c0c8ba0b951c3c002916e806c46a5a60bfa60c21ec39f1c00eb",
+  "index.html": "3358de5e73523713caf329ddeaf14686091bedaedb735bd4e193ad34bcb14fb7",
   "media/Azibo_ObsChimp_2015_11_25_d_clip_1000_2000.mp4": "03e80cad9e82862401d7e0bbb6abb675107c7215c4f29c68f75fd51e513fa0f3",
   "media/Azibo_ObsChimp_2016_10_07_b_clip_2000_3000.mp4": "049906fbda4604f5baefbe0f4ed249ab7a118de48456f8ff8547e6ddb8a16cf2",
   "media/Azibo_ObsChimp_2017_05_27_b_clip_4000_5000.mp4": "d854f74b2ead72b5d173bff1ca639d3414ab16340f713c8d4c8d414b661637a4",
@@ -214,6 +216,6 @@
   "seal/references/seal_harbor_19s.jpg": "9fcd3c11e2c72edf7ebc38f2a8c3656617991722b40fb180f10dd9aefa185033",
   "seal/references/seal_harbor_pair.jpg": "d436816e97c07c045a521e85183fe4e1198fc136e53dfdc864efe5143cf73be8",
   "seal/serve.py": "cb78476726b87de57712cdc7a19ae3a825c8f90cb4eef3e4d6e0663bec303fff",
-  "seal/ui.patch": "85f45fc739c0d31cde433570cb73fab73c70a5d887bd04781b21497d3bcdb56e",
-  "seal.html": "8ee3cb0695e1d4cbea7d079a0fb1ed8df6b8acf9f55e25b68d1e222f86de48c9"
+  "seal/ui.patch": "48666d1a5c2f71fa3a8044a4e114aa2bc3c22cdec622053d35807470ee7e671e",
+  "seal.html": "68921583215e4d7c91e164382c46b49ff650f0a9b6ae9a371625c9c4bf066804"
 }
