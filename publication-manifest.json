@@ -1,9 +1,10 @@
 {
   ".nojekyll": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-  "README.md": "1800097d6273f405880b74156bd3949806c9fbe03f1fdbcfaee0846a20ae1edc",
-  "animals.html": "90f0dc17ffa1f9f4ed9671568edfceafd78f34608177f675cd36fcd984709891",
+  "README.md": "cd00d3599dd7dbda940b2745ade0d50249353a2ed2e3dcbe10b1c1d1318e15db",
+  "animals.html": "7b141b54d618c1beaba74f97323b4cf6c1124ef5b7dcfda2306b63336be89065",
   "assets/index-Bavja6RY.js": "68ed0e4d9e95d9093be9e9053057f4a9b84a92cf83bf5f6215e8e43da89b64a3",
   "assets/index-CNUSP3Yk.js": "dbef8eabc3a518592d2047167ca0ad1a16842b721a1dd81b07789bf585c4e0a5",
+  "assets/index-CwWuR-tq.js": "2b9eaed985dd704d3c88adeeb1e1a979e87f66325ed936466bc4417947d98aae",
   "assets/index-D5r33qKE.css": "8df46acf845bc2cd562008e870a9b349a909f2df6c648917b82a307caae6e242",
   "assets/index-DihalOqw.css": "6abe650d7a073e39b11d1259858c838dfa00e55b981e68a39cf799339fc23385",
   "assets/index-K7P9pAMS.js": "26d40e02d033cadf7c73602bd442a7d47e9c89345a13d903dcb2384f669d21d8",
@@ -83,7 +84,7 @@
   "downloads/sample-01-mapped-16x9.mp4": "11947af9e7722a1faa43834db513f451499404c6eb66b851a39725062d3f1791",
   "downloads/sample-02-mapped-16x9.mp4": "c1d17735c1f6334af79c0ddffdafc80141a116421f0f80a784e11aca57c2524d",
   "downloads/sample-03-mapped-16x9.mp4": "b4af92c4f99ff625ee616aa61762ae3bb1cfdda42ab26c24a9503a448a165a05",
-  "index.html": "3358de5e73523713caf329ddeaf14686091bedaedb735bd4e193ad34bcb14fb7",
+  "index.html": "1f9293edd6bfad31c8e37b1c0c730198e800f79de45063833cb238a39dd0e8e0",
   "media/Azibo_ObsChimp_2015_11_25_d_clip_1000_2000.mp4": "03e80cad9e82862401d7e0bbb6abb675107c7215c4f29c68f75fd51e513fa0f3",
   "media/Azibo_ObsChimp_2016_10_07_b_clip_2000_3000.mp4": "049906fbda4604f5baefbe0f4ed249ab7a118de48456f8ff8547e6ddb8a16cf2",
   "media/Azibo_ObsChimp_2017_05_27_b_clip_4000_5000.mp4": "d854f74b2ead72b5d173bff1ca639d3414ab16340f713c8d4c8d414b661637a4",
@@ -216,6 +217,6 @@
   "seal/references/seal_harbor_19s.jpg": "9fcd3c11e2c72edf7ebc38f2a8c3656617991722b40fb180f10dd9aefa185033",
   "seal/references/seal_harbor_pair.jpg": "d436816e97c07c045a521e85183fe4e1198fc136e53dfdc864efe5143cf73be8",
   "seal/serve.py": "cb78476726b87de57712cdc7a19ae3a825c8f90cb4eef3e4d6e0663bec303fff",
-  "seal/ui.patch": "48666d1a5c2f71fa3a8044a4e114aa2bc3c22cdec622053d35807470ee7e671e",
-  "seal.html": "68921583215e4d7c91e164382c46b49ff650f0a9b6ae9a371625c9c4bf066804"
+  "seal/ui.patch": "4c7d0a2b8b4e878811699b019d8c38bc4fd0fdebc904505f118553c3180a278d",
+  "seal.html": "c872a2e5c1456aed7126000277f2534c5bfc7a7c7f40989ab015cd812fbe9e0a"
 }

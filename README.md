@@ -80,6 +80,10 @@ http://127.0.0.1:5189/animals.html で動物種・動画カードを切り替え
 検証pass: TypeScript/Vite、45テスト、5種の再読み込みなしの切替、動く相関図・シーク復帰・一時停止・再生、動物種のURL保存、19秒動画、スマホ表示、JS/HTTPエラーなし。既存チンパンジー3動画のAI/GT・プロフィール・全画面・3画面幅も既存smokeでpass。画像上の運動に連動する模式図であり、社会関係やBBox精度の評価ではありません。
 仮名表示milestone: アザラシ3・鯉9・ハト17・豚26の計55追跡／注釈IDに展示用の仮名を設定。元IDとチンパンジーの名前は保持。検証pass: 45テスト、TypeScript/Vite、全55仮名のBBox・個体カード・相関図表示、仮名の注意書き、チンパンジー表示、JS/HTTPエラーなし。
 
+アザラシ動画保存: 選択中の動画をMP4で保存できるリンクを追加。5本の短区間動画は `seal/media/` に保存済み。保存ファイルは映像のみで、BBox・仮名・相関図はUI上で同期表示する。相関図は観測した同時出現・近接であり、社会関係ではない。再利用時は画面の出典・ライセンスを参照。
+
+保存リンク検証pass: 5本すべてのダウンロードSHA256が保存済みMP4と一致、出典への移動、全動画decode、45テスト、TypeScript/Vite。5種の相関図移動・シーク復帰・停止・再生とスマホ表示もpass。
+
 ## Additional GT animal demos
 
 datasets/ contains koi, pigeons and pigs from Animal Re-Identification from Video, https://zenodo.org/records/7322821 . Dataset annotations: CC BY 4.0; original stock videos: Pixabay License. These media are integrated into the interactive GT viewer, not offered as standalone downloads. Individual IDs are video-local ground truth, not AI predictions. Only observed co-occurrence/proximity is shown, with no invented social relationships or biographies. Full authors, provenance and modifications: datasets/LICENSE.txt. The original ChimpACT files keep their separate CC BY-NC 4.0 license.
