@@ -84,6 +84,13 @@ http://127.0.0.1:5189/animals.html で動物種・動画カードを切り替え
 
 保存リンク検証pass: 5本すべてのダウンロードSHA256が保存済みMP4と一致、出典への移動、全動画decode、45テスト、TypeScript/Vite。5種の相関図移動・シーク復帰・停止・再生とスマホ表示もpass。
 
+## アザラシのマッピング済み動画
+
+`seal/downloads/seal_harbor_19s-mapped.mp4` はBBox・仮名と動画同期の観測相関図を焼き込んだ19秒・1280×720・10fpsの無音MP4です。手動BBox（補間あり）であり、AI検出結果ではありません。表示名は仮名、辺は注釈共起で社会関係ではありません。加工動画もCC BY-SA 2.0で提供し、作者・出典・変更内容を `seal/downloads/LICENSE.txt` と動画内へ記載しています。
+既存 `animal_video_reid/export_demo_videos.py` のPlaywrightフレーム描画→FFmpeg方式を再利用。再生成: `python3 seal/export_mapped.py --output /path/to/new-directory` （ローカル観測UIを5189で起動、Playwright/ChromiumとFFmpegが必要）。元MP4は `seal/media/` に保持。変更はエクスポート処理、加工動画と利用条件、保存リンクに限定。
+
+加工動画検証pass: 190フレーム・19秒・1280×720・10fps、全decode、4秒時点のBBox2件以上と相関辺、焼き込み画像の目視確認、ダウンロードSHA256一致。45テスト、TypeScript/Vite、Ruff、全仮名表示と5種の相関図・シーク・再生回帰もpass。
+
 ## Additional GT animal demos
 
 datasets/ contains koi, pigeons and pigs from Animal Re-Identification from Video, https://zenodo.org/records/7322821 . Dataset annotations: CC BY 4.0; original stock videos: Pixabay License. These media are integrated into the interactive GT viewer, not offered as standalone downloads. Individual IDs are video-local ground truth, not AI predictions. Only observed co-occurrence/proximity is shown, with no invented social relationships or biographies. Full authors, provenance and modifications: datasets/LICENSE.txt. The original ChimpACT files keep their separate CC BY-NC 4.0 license.
