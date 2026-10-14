@@ -77,3 +77,6 @@ http://127.0.0.1:5189/animals.html で動物種・動画カードを切り替え
 
 統合・公開milestone: 5種をページ再読み込みなしで切替、選択状態をURLへ保持。相関図の動きを動画時刻・BBoxへ接続。既存公開commit `69ca7ba` をmergeして履歴を保全し、Pages対象の `codex/20261013-pages` へfast-forward pushする。force push・新規学習・LLM APIは使用しない。
 検証pass: TypeScript/Vite、45テスト、5種の再読み込みなしの切替、動く相関図・シーク復帰・一時停止・再生、動物種のURL保存、19秒動画、スマホ表示、JS/HTTPエラーなし。既存チンパンジー3動画のAI/GT・プロフィール・全画面・3画面幅も既存smokeでpass。画像上の運動に連動する模式図であり、社会関係やBBox精度の評価ではありません。
+## Additional GT animal demos
+
+datasets/ contains koi, pigeons and pigs from Animal Re-Identification from Video, https://zenodo.org/records/7322821 . Dataset annotations: CC BY 4.0; original stock videos: Pixabay License. These media are integrated into the interactive GT viewer, not offered as standalone downloads. Individual IDs are video-local ground truth, not AI predictions. Only observed co-occurrence/proximity is shown, with no invented social relationships or biographies. Full authors, provenance and modifications: datasets/LICENSE.txt. The original ChimpACT files keep their separate CC BY-NC 4.0 license.
