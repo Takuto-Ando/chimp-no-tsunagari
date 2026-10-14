@@ -15,3 +15,7 @@ Model weights, private research repository, backend, databases, credentials, and
 ## Downloadable mapped videos
 
 downloads/ contains three silent 16:9 MP4 demo videos. Original images are letterboxed without stretching or cropping. AI-estimated names and fictional sex/character/social overlays are burned in. These are not live inference or verified social relationships. Redistribute only for noncommercial use with downloads/LICENSE.txt.
+
+## Additional GT animal demos
+
+datasets/ contains koi, pigeons and pigs from Animal Re-Identification from Video, https://zenodo.org/records/7322821 . Dataset annotations: CC BY 4.0; original stock videos: Pixabay License. These media are integrated into the interactive GT viewer, not offered as standalone downloads. Individual IDs are video-local ground truth, not AI predictions. Only observed co-occurrence/proximity is shown, with no invented social relationships or biographies. Full authors, provenance and modifications: datasets/LICENSE.txt. The original ChimpACT files keep their separate CC BY-NC 4.0 license.
