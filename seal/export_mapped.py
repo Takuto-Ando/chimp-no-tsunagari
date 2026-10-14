@@ -29,15 +29,15 @@ def export(url, output):
             .react-flow { display: none !important; }
             .react-flow__node, .stage * { transition: none !important; }
             .react-flow__controls, .react-flow__attribution { display: none !important; }
-            .overlay .bbox rect { stroke-opacity: 1 !important; stroke-width: 3px !important; }
+            .overlay .bbox rect { stroke-opacity: 0 !important; }
             .relationship-telop { transform: translateY(-22px); }
             .react-flow__viewport { transform: translate(25px, 95px) scale(0.65) !important; }
         """
         )
         page.evaluate(r"""() => {
             for (const [top, height, text] of [
-                [0, 48, 'アザラシ：手動BBox・仮名・映像内の共起矢印（AI検出ではありません）'],
-                [656, 64, '名前は仮名。矢印は同時出現で、社会関係・行動方向ではありません。\nThe Lamb Family · Harbor seals · CC BY-SA 2.0 · 無音・再圧縮・注釈追加']
+                [0, 48, 'アザラシ：仮名・設定つながり（ID固定）'],
+                [656, 64, '名前と関係は展示用の架空設定です。実際の社会関係ではありません。\nThe Lamb Family · Harbor seals · CC BY-SA 2.0 · 無音・再圧縮・仮設定追加']
             ]) {
                 const banner = document.createElement('div');
                 banner.textContent = text;
@@ -142,8 +142,9 @@ def export(url, output):
         "The Lamb Family, Harbor seals (Phoca vitulina). CC BY-SA 2.0.\n"
         "Source: https://commons.wikimedia.org/wiki/File:Harbor_seals_(Phoca_vitulina).webm\n"
         "License: https://creativecommons.org/licenses/by-sa/2.0/\n"
-        "Changes: 19-second excerpt, silent, re-encoded; manual interpolated BBoxes, "
-        "provisional names and synchronized co-occurrence arrows over animals burned into video.\n"
+        "Changes: 19-second excerpt, silent, re-encoded; provisional names and "
+        "ID-fixed fictional relationship arrows over tracked animals burned into video. "
+        "No bounding box outlines are shown.\n"
         "Not AI detections, verified individual names or social relationships. "
         "Unannotated or uncertain animals/segments may remain. No endorsement implied.\n"
         "This adapted video is distributed under CC BY-SA 2.0.\n"

@@ -1,6 +1,6 @@
 # 動物のつながり — 公開研究デモ
 
-チンパンジー・アザラシ・鯉・ハト・豚を同じ入口の「動物種」で切り替える非商用研究デモです。AIライブ推論ではありません。チンパンジーの展示用社会関係は架空で、ほかの動物は動画内の追跡ID・注釈IDと観測共起を表示します。
+チンパンジー・アザラシ・鯉・ハト・豚を同じ入口の「動物種」で切り替える非商用研究デモです。AIライブ推論ではありません。ユーザー指定により展示用のつながりは架空設定とし、アザラシ・鯉・ハト・豚にはID固定の「友達・ライバル・遊び仲間」を表示します。実際の社会関係ではありません。全種でBBox枠を非表示にし、位置データは名前と矢印の追従にだけ利用します。下記の過去milestoneは実装経緯であり、現在の表示仕様はこの段落を優先します。
 
 公開入口: https://takuto-ando.github.io/chimp-no-tsunagari/ 。`?species=seal` などで選択動物を指定できます。`seal.html` / `animals.html` は互換入口です。
 アザラシ3・鯉9・ハト17・豚26の全55件の追跡／注釈IDに展示用の仮名を付けています（例: しお・なぎ・みなと）。一覧は `data/displayNames.json`。各種の配列はID番号の1始まり順です。実在の名前、性別、性格、社会関係を示しません。動画間の同一性を意味せず、元のID・BBox・共起計算は変更していません。チンパンジーの既存名は保持しています。
@@ -95,6 +95,10 @@ http://127.0.0.1:5189/animals.html で動物種・動画カードを切り替え
 
 映像内矢印検証pass: 再生時刻に応じた矢印位置の変化、関係線チェックによる表示切替、焼き込みプレビューの目視、19秒・190フレーム・1280×720。TypeScript/Vite・45テスト・Ruff・仮名と既存5種の動作回帰もpass。
 
+設定つながりmilestone: 共起表示をやめ、全55件の仮名と元IDを保持したまま、アザラシ・鯉・ハト・豚の関係種類をID順で固定。表示時刻・選択・入力順で同じペアの種類は変わらない。Unknownには設定しない。全種のUIと保存アザラシ動画でBBox枠を隠す。新規学習・推論・依存追加なし。
+
+設定つながり検証pass: 48テスト（順序に依存しないID固定・自己関係／重複なしを追加）、TypeScript/Vite、Prettier、Ruff。全5種で枠非表示、共起ラベルなし、仮関係のシーク時固定、矢印表示切替を確認。55仮名、既存動画切替・相関図の動き・スマホ表示も回帰pass。アザラシ19秒MP4の全decodeと枠なし・友達矢印の焼き込みを目視確認。
+
 ## Additional GT animal demos
 
-datasets/ contains koi, pigeons and pigs from Animal Re-Identification from Video, https://zenodo.org/records/7322821 . Dataset annotations: CC BY 4.0; original stock videos: Pixabay License. These media are integrated into the interactive GT viewer, not offered as standalone downloads. Individual IDs are video-local ground truth, not AI predictions. Only observed co-occurrence/proximity is shown, with no invented social relationships or biographies. Full authors, provenance and modifications: datasets/LICENSE.txt. The original ChimpACT files keep their separate CC BY-NC 4.0 license.
+datasets/ contains koi, pigeons and pigs from Animal Re-Identification from Video, https://zenodo.org/records/7322821 . Dataset annotations: CC BY 4.0; original stock videos: Pixabay License. These media are integrated into the interactive GT viewer, not offered as standalone downloads. Individual IDs are video-local ground truth, not AI predictions. Display names and ID-fixed relationship labels are fictional exhibition settings, not observed social facts. Original annotation data is unchanged. Full authors, provenance and modifications: datasets/LICENSE.txt. The original ChimpACT files keep their separate CC BY-NC 4.0 license.

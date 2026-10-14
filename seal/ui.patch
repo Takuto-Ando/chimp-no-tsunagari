@@ -1,23 +1,25 @@
 --- a/src/App.tsx
 +++ b/src/App.tsx
-@@ -38 +38,2 @@
+@@ -16,0 +17 @@
++import { fixedRelationships } from "./fixedRelationships";
+@@ -38 +39,2 @@
 -  individuals,
 +  individuals as registeredIndividuals,
 +  sealIndividuals,
-@@ -80 +81,2 @@
+@@ -80 +82,2 @@
 -export function App() {
 +export function App({ species = "chimp" }: { species?: "chimp" | "seal" }) {
 +  const sealMode = species === "seal";
-@@ -82 +84 @@
+@@ -82 +85 @@
 -  const [demo, setDemo] = useState(true);
 +  const [demo, setDemo] = useState(!sealMode);
-@@ -89 +91 @@
+@@ -89 +92 @@
 -  const [mode, setMode] = useState<"ai" | "gt">("ai");
 +  const [mode, setMode] = useState<"ai" | "gt">(sealMode ? "gt" : "ai");
-@@ -97 +99 @@
+@@ -97 +100 @@
 -  const [allRelations, setAllRelations] = useState(false);
 +  const [allRelations, setAllRelations] = useState(sealMode);
-@@ -103 +105,11 @@
+@@ -103 +106,11 @@
 -    defaultDisplaySettings,
 +    sealMode
 +      ? {
@@ -30,10 +32,10 @@
 +          deadbandRatio: 0,
 +        }
 +      : defaultDisplaySettings,
-@@ -117 +129 @@
+@@ -117 +130 @@
 -      reducedMotion,
 +      reducedMotion: sealMode || reducedMotion,
-@@ -127,0 +140,9 @@
+@@ -127,0 +141,9 @@
 +  const individuals = useMemo(
 +    () =>
 +      sealMode
@@ -43,10 +45,10 @@
 +        : registeredIndividuals,
 +    [video, sealMode],
 +  );
-@@ -141 +162 @@
+@@ -141 +163 @@
 -    fetch(catalogUrl(), { signal: controller.signal })
 +    fetch(catalogUrl(sealMode), { signal: controller.signal })
-@@ -147,2 +168,5 @@
+@@ -147,2 +169,5 @@
 -          data.videos.find((item) => item.recording_date === "2016_10_07")
 -            ?.video_id ?? data.videos[0].video_id,
 +          data.videos.find((item) =>
@@ -54,10 +56,10 @@
 +              ? (item.track_ids?.length ?? 0) > 1
 +              : item.recording_date === "2016_10_07",
 +          )?.video_id ?? data.videos[0].video_id,
-@@ -161 +185 @@
+@@ -161 +186 @@
 -    fetch(bundleUrl(videoId, mode), { signal: controller.signal })
 +    fetch(bundleUrl(videoId, mode, sealMode), { signal: controller.signal })
-@@ -301,0 +326,11 @@
+@@ -301,0 +327,11 @@
 +      sealMode &&
 +      bundle?.video_id === videoId &&
 +      videoRef.current &&
@@ -69,7 +71,30 @@
 +      return;
 +    }
 +    if (
-@@ -369,0 +405,7 @@
+@@ -345,0 +382,7 @@
++  const sealRelations = fixedRelationships(
++    sealIndividuals.map((animal) => animal.id),
++  ).filter(
++    (relation) =>
++      individuals.some((animal) => animal.id === relation.individual_a) &&
++      individuals.some((animal) => animal.id === relation.individual_b),
++  );
+@@ -347 +390,13 @@
+-    ...(demo ? [] : edges),
++    ...(demo || sealMode ? [] : edges),
++    ...sealRelations
++      .filter(() => sealMode)
++      .map((relation) => ({
++        id: relation.id,
++        source: relation.individual_a,
++        target: relation.individual_b,
++        label: demoRelationshipKinds[relation.kind].label,
++        style: {
++          stroke: demoRelationshipKinds[relation.kind].color,
++          strokeWidth: 3,
++        },
++      })),
+@@ -369,0 +425,7 @@
 +    if (sealMode) {
 +      setVideoId(sample.id);
 +      setSelected(null);
@@ -77,7 +102,7 @@
 +      demoSeeked.current = "";
 +      return;
 +    }
-@@ -386,0 +429,13 @@
+@@ -386,0 +449,13 @@
 +  const samples = sealMode
 +    ? (catalog?.videos ?? []).map((item) => ({
 +        id: item.video_id,
@@ -85,25 +110,25 @@
 +        title: item.strict_split,
 +        description:
 +          (item.track_ids?.length ?? 1) > 1
-+            ? "一時追跡IDと観測の共起を見る"
++            ? "仮名とID固定の設定つながりを見る"
 +            : "実動画の一時追跡IDを見る",
 +        primaryKind: "parent" as const,
 +        coverId: "",
 +      }))
 +    : demoSamples;
-@@ -392 +447 @@
+@@ -392 +467 @@
 -            CHIMPACT · REAL VIDEO /{" "}
 +            {sealMode ? "SEAL · MANUAL TRACKING" : "CHIMPACT · REAL VIDEO"} /{" "}
-@@ -397,3 +452,5 @@
+@@ -397,3 +472,5 @@
 -            {demo
 -              ? "3本の実動画から、名前とさまざまな関係を発見するデモ体験。"
 -              : "実映像と観測相関図の検証。AIの不確実さも、そのまま表示します。"}
 +            {sealMode
-+              ? "実映像の手動BBoxと一時追跡ID。実在の個体名・社会関係は未確認です。"
++              ? "実映像の仮名とID固定の設定つながり。関係は展示用の架空設定です。"
 +              : demo
 +                ? "3本の実動画から、名前とさまざまな関係を発見するデモ体験。"
 +                : "実映像と観測相関図の検証。AIの不確実さも、そのまま表示します。"}
-@@ -403,0 +461,8 @@
+@@ -403,0 +481,8 @@
 +      <a href={sealMode ? "./index.html" : "./seal.html"}>
 +        {sealMode ? "チンパンジー版へ" : "アザラシ版へ"}
 +      </a>
@@ -112,7 +137,7 @@
 +          鯉・ハト・豚へ
 +        </a>
 +      )}
-@@ -405,3 +470,5 @@
+@@ -405,3 +490,5 @@
 -        {demoSamples.map((sample) => {
 -          const target = catalog?.videos.find(
 -            (item) => item.recording_date === sample.recordingDate,
@@ -121,10 +146,10 @@
 +            sealMode
 +              ? item.video_id === sample.id
 +              : item.recording_date === sample.recordingDate,
-@@ -414 +481 @@
+@@ -414 +501 @@
 -              aria-pressed={demo && target?.video_id === videoId}
 +              aria-pressed={(sealMode || demo) && target?.video_id === videoId}
-@@ -419,2 +486,6 @@
+@@ -419,2 +506,6 @@
 -                src={referenceUrl(sample.coverId)}
 -                alt="登録用の代表個体画像"
 +                src={
@@ -133,14 +158,14 @@
 +                    : referenceUrl(sample.coverId)
 +                }
 +                alt={sealMode ? "実動画のプレビュー" : "登録用の代表個体画像"}
-@@ -426 +497,5 @@
+@@ -426 +517,5 @@
 -                <small>40秒 · 実動画 · AI／注釈切替</small>
 +                <small>
 +                  {sealMode && target
 +                    ? `${target.frame_count / target.fps}秒 · 実動画 · 手動注釈`
 +                    : "40秒 · 実動画 · AI／注釈切替"}
 +                </small>
-@@ -452,0 +528,24 @@
+@@ -452,0 +548,24 @@
 +      {sealMode && video && (
 +        <section className="notice" aria-label="アザラシ動画保存">
 +          {pagesMode && videoId === "seal_harbor_19s" && (
@@ -149,7 +174,7 @@
 +                href={`${import.meta.env.BASE_URL}seal/downloads/seal_harbor_19s-arrows.mp4`}
 +                download
 +              >
-+                BBox・仮名・映像内の矢印入り動画を保存（19秒MP4）
++                仮名・設定つながりの矢印入り動画を保存（19秒MP4）
 +              </a>{" "}
 +              <a href={`${import.meta.env.BASE_URL}seal/downloads/LICENSE.txt`}>
 +                加工動画の利用条件
@@ -160,58 +185,54 @@
 +            元映像のみを保存（MP4）
 +          </a>{" "}
 +          <small>
-+            加工動画は手動注釈で、AI検出結果ではありません。再利用時は
++            関係は展示用の架空設定です。再利用時は
 +            <a href="#sources">出典・ライセンス</a>を確認してください。
 +          </small>
 +        </section>
 +      )}
-@@ -483 +582 @@
+@@ -483 +602 @@
 -            ? "正解注釈には検出感度を適用しません。"
 +            ? "手動注釈には検出感度を適用しません。"
-@@ -538,0 +638 @@
+@@ -538,0 +658 @@
 +            disabled={sealMode}
-@@ -612,0 +713 @@
+@@ -612,0 +733 @@
 +            disabled={sealMode}
-@@ -627 +728 @@
+@@ -627 +748 @@
 -            正解注釈（GT）
-+            {sealMode ? "手動BBox・一時追跡ID" : "正解注釈（GT）"}
-@@ -647 +748 @@
++            {sealMode ? "手動追跡・一時ID" : "正解注釈（GT）"}
+@@ -647 +768 @@
 -      <DisplayPlayground settings={effectiveDisplaySettings} />
 +      {!sealMode && <DisplayPlayground settings={effectiveDisplaySettings} />}
-@@ -665,3 +766,5 @@
+@@ -665,3 +786,5 @@
 -        {mode === "ai"
 -          ? "AI推定：認識基準を満たさない個体はUnknownです。正解IDは推定処理に使用していません。"
 -          : "GT表示：人手による正解注釈です。AIの成功ではありません。BBoxは0.4秒間隔の注釈を保持表示します。"}
 +        {sealMode
-+          ? "表示名は展示用の仮名で、実在の名前ではありません。各映像内だけの一時追跡IDに付けています。目視BBox（補間を含む）を表示し、未注釈・不確かな区間は除外しています。別動画との個体対応・社会関係は未確認です。"
++          ? "表示名は仮名で、関係は展示用の架空設定です。関係はIDに固定し、再生・シークで変わりません。実在の名前・社会関係ではありません。追跡IDの別動画との対応は未確認です。BBox枠は表示しません。"
 +          : mode === "ai"
 +            ? "AI推定：認識基準を満たさない個体はUnknownです。正解IDは推定処理に使用していません。"
 +            : "GT表示：人手による正解注釈です。AIの成功ではありません。BBoxは0.4秒間隔の注釈を保持表示します。"}
-@@ -696 +799 @@
+@@ -696 +819 @@
 -                  src={mediaUrl(videoId)}
 +                  src={mediaUrl(videoId, sealMode)}
-@@ -742,0 +846,15 @@
+@@ -742,0 +866,8 @@
 +                  {sealMode && overlay && (
 +                    <RelationshipOverlay
 +                      observations={displayedObservations}
-+                      relations={relations.map((relation) => ({
-+                        id: `${relation.individual_a}:${relation.individual_b}`,
-+                        individual_a: relation.individual_a,
-+                        individual_b: relation.individual_b,
-+                        kind: "support",
-+                        label: "共起",
-+                      }))}
++                      relations={sealRelations}
 +                      video={video}
 +                      displayWidth={displayWidth}
-+                      observed
 +                    />
 +                  )}
-@@ -752,0 +871 @@
+@@ -752,0 +884 @@
 +                    !sealMode &&
-@@ -945 +1064 @@
+@@ -848 +980 @@
+-                            strokeOpacity={viewingMode === "debug" ? 1 : 0}
++                            strokeOpacity={0}
+@@ -945 +1077 @@
 -              {active.size} 個体識別
 +              {active.size} {sealMode ? "一時追跡" : "個体識別"}
-@@ -951,17 +1070,19 @@
+@@ -951,17 +1083,19 @@
 -          <BehaviorTimeline
 -            selected={chosen?.id ?? null}
 -            videoId={videoId}
@@ -248,25 +269,34 @@
 +              }}
 +            />
 +          )}
-@@ -1010 +1131,5 @@
+@@ -1010 +1144,5 @@
 -          <div className="metrics">
 +          <div
 +            className="metrics"
 +            hidden={sealMode}
 +            style={sealMode ? { display: "none" } : undefined}
 +          >
-@@ -1061 +1186 @@
+@@ -1061 +1199 @@
 -          <p className="footnote">
 +          <p className="footnote" hidden={sealMode}>
-@@ -1087 +1212 @@
+@@ -1074 +1212 @@
+-          <p className="footnote">
++          <p className="footnote" hidden={sealMode || demo}>
+@@ -1080 +1218 @@
+-            <h2>{demo ? "相関図" : "観測のつながり"}</h2>
++            <h2>{demo || sealMode ? "設定つながり" : "観測のつながり"}</h2>
+@@ -1087 +1225 @@
 -              placeholder="Azibo、Swela…"
 +              placeholder={sealMode ? "しお、なぎ、みなと…" : "Azibo、Swela…"}
-@@ -1115,0 +1241,4 @@
+@@ -1115,0 +1254,4 @@
 +              icon={sealMode ? "🦭" : "🐒"}
 +              animals={individuals}
 +              observations={displayedObservations}
 +              video={video}
-@@ -1125,5 +1254,7 @@
+@@ -1118 +1260 @@
+-              demo={demo}
++              demo={demo || sealMode}
+@@ -1125,5 +1267,7 @@
 -            <AnimalExperience
 -              selected={chosen?.id ?? null}
 -              demo={demo}
@@ -279,7 +309,7 @@
 +                relations={demoRelations}
 +              />
 +            )}
-@@ -1132 +1263,6 @@
+@@ -1132 +1276,6 @@
 -                <p>チンパンジー · {chosen.id}</p>
 +                <p>
 +                  {sealMode
@@ -287,28 +317,82 @@
 +                    : "チンパンジー"}{" "}
 +                  · {chosen.id}
 +                </p>
-@@ -1165 +1301,3 @@
+@@ -1165 +1314,3 @@
 -                  名前対応はChimpACT公式注釈コード由来。性格・親子・友好関係は登録していません。
 +                  {sealMode
 +                    ? `「${chosen.name}」は展示用の仮名です。実在名ではなく、この映像内だけの一時追跡IDに付けています。SealIDとの対応・性別・社会関係は未確認です。`
 +                    : "名前対応はChimpACT公式注釈コード由来。性格・親子・友好関係は登録していません。"}
-@@ -1238 +1376 @@
+@@ -1214,19 +1365,34 @@
+-            {relations.map((relation) => (
+-              <div
+-                className="history"
+-                key={`${relation.individual_a}:${relation.individual_b}`}
+-              >
+-                <strong>
+-                  {displayName(relation.individual_a)} ×{" "}
+-                  {displayName(relation.individual_b)}
+-                </strong>
+-                <span>
+-                  共起 {relation.stats.appearances}回 /{" "}
+-                  {relation.stats.seconds.toFixed(1)}秒 · 近接{" "}
+-                  {relation.stats.approaches}回 /{" "}
+-                  {relation.stats.nearSeconds.toFixed(1)}秒 · 同じエリア{" "}
+-                  {relation.stats.sameAreaSeconds.toFixed(1)}秒
+-                </span>
+-              </div>
+-            ))}
+-            {chosen && !relations.length && (
++            {sealMode &&
++              sealRelations.map((relation) => (
++                <div className="history" key={relation.id}>
++                  <strong>
++                    {displayName(relation.individual_a)} ×{" "}
++                    {displayName(relation.individual_b)}
++                  </strong>
++                  <span>
++                    {demoRelationshipKinds[relation.kind].label}
++                    （仮設定・ID固定）
++                  </span>
++                </div>
++              ))}
++            {!sealMode &&
++              !demo &&
++              relations.map((relation) => (
++                <div
++                  className="history"
++                  key={`${relation.individual_a}:${relation.individual_b}`}
++                >
++                  <strong>
++                    {displayName(relation.individual_a)} ×{" "}
++                    {displayName(relation.individual_b)}
++                  </strong>
++                  <span>
++                    共起 {relation.stats.appearances}回 /{" "}
++                    {relation.stats.seconds.toFixed(1)}秒 · 近接{" "}
++                    {relation.stats.approaches}回 /{" "}
++                    {relation.stats.nearSeconds.toFixed(1)}秒 · 同じエリア{" "}
++                    {relation.stats.sameAreaSeconds.toFixed(1)}秒
++                  </span>
++                </div>
++              ))}
++            {chosen && !sealMode && !demo && !relations.length && (
+@@ -1238 +1404 @@
 -      <footer>
 +      <footer id="sources">
-@@ -1240 +1378,5 @@
+@@ -1240 +1406,5 @@
 -          href="https://shirleymaxx.github.io/ChimpACT/"
 +          href={
 +            sealMode
 +              ? (video?.source?.url ?? "https://zenodo.org/records/3842040")
 +              : "https://shirleymaxx.github.io/ChimpACT/"
 +          }
-@@ -1244 +1386,4 @@
+@@ -1244 +1414,4 @@
 -          Ma et al., ChimpACT, NeurIPS 2023
 +          {sealMode
 +            ? (video?.source?.title ??
 +              "Ian Durbach · Video classification using deep learning (2020)")
 +            : "Ma et al., ChimpACT, NeurIPS 2023"}
-@@ -1248 +1393,6 @@
+@@ -1248 +1421,6 @@
 -          href="https://creativecommons.org/licenses/by-nc/4.0/"
 +          href={
 +            sealMode
@@ -316,17 +400,17 @@
 +                "https://creativecommons.org/licenses/by/4.0/")
 +              : "https://creativecommons.org/licenses/by-nc/4.0/"
 +          }
-@@ -1252 +1402,3 @@
+@@ -1252 +1430,3 @@
 -          CC BY-NC 4.0（非商用）
 +          {sealMode
 +            ? (video?.source?.license ?? "CC BY 4.0")
 +            : "CC BY-NC 4.0（非商用）"}
-@@ -1255,3 +1407,5 @@
+@@ -1255,3 +1435,5 @@
 -        {pagesMode
 -          ? "公開研究デモ。動画を再圧縮、画像を切り出し、推定BBoxと架空の関係を重ねています。著者による推奨・監修ではありません。事前計算済み結果の再生で、ブラウザ内AI推論やライブカメラではありません。"
 -          : "ローカル研究用。"}
 +        {sealMode
-+          ? "短区間を無音MP4へ変換・再圧縮し、手動BBox・一時追跡IDを追加。作者の推奨を意味しません。共起・近接は画像上の観測で、社会関係は未確認です。AI推論・SealID画像の使用はありません。"
++          ? "短区間を無音MP4へ変換・再圧縮し、仮名・設定つながりを追加。関係は展示用の架空設定です。作者の推奨を意味しません。AI推論・SealID画像の使用はありません。"
 +          : pagesMode
 +            ? "公開研究デモ。動画を再圧縮、画像を切り出し、推定BBoxと架空の関係を重ねています。著者による推奨・監修ではありません。事前計算済み結果の再生で、ブラウザ内AI推論やライブカメラではありません。"
 +            : "ローカル研究用。"}
@@ -443,11 +527,15 @@
 +    ? `${import.meta.env.BASE_URL}${dataset}media/${videoId}.mp4`
 --- a/src/DatasetViewer.tsx
 +++ b/src/DatasetViewer.tsx
-@@ -15,0 +16 @@
+@@ -7 +7 @@
+-  summary,
++  demoRelationshipKinds,
+@@ -15,0 +16,2 @@
 +import { displayAlias } from "./displayAlias";
-@@ -18,0 +20 @@
++import { fixedRelationships } from "./fixedRelationships";
+@@ -18,0 +21 @@
 +  seal: "アザラシ",
-@@ -31,8 +32,0 @@
+@@ -31,8 +33,0 @@
 -  inference?: {
 -    metrics: {
 -      precision: number;
@@ -456,7 +544,7 @@
 -    };
 -    device: string;
 -  };
-@@ -49 +43,10 @@
+@@ -49 +44,10 @@
 -  const [species, setSpecies] = useState<keyof typeof speciesOptions>("chimp");
 +  const [species, setSpecies] = useState<keyof typeof speciesOptions>(() => {
 +    const requested = new URLSearchParams(location.search).get("species");
@@ -468,7 +556,7 @@
 +        ? "koi"
 +        : "chimp";
 +  });
-@@ -58,3 +61,7 @@
+@@ -58,3 +62,7 @@
 -            onChange={(event) =>
 -              setSpecies(event.target.value as keyof typeof speciesOptions)
 -            }
@@ -479,12 +567,12 @@
 +              history.replaceState(null, "", url);
 +              setSpecies(target);
 +            }}
-@@ -72 +79,3 @@
+@@ -72 +80,3 @@
 -            : "実映像＋AI推定／正解注釈（GT）"}
 +            : species === "seal"
-+              ? "実映像＋手動追跡・社会関係は未確認"
-+              : "実映像＋正解注釈（GT）・AI推論ではありません"}
-@@ -75,2 +84,28 @@
++              ? "実映像＋手動追跡・関係は仮設定"
++              : "実映像＋注釈ID・関係は仮設定"}
+@@ -75,2 +85,28 @@
 -      {species === "chimp" ? (
 -        <App />
 +      {species !== "chimp" && species !== "seal" && (
@@ -506,7 +594,7 @@
 +                  <strong>
 +                    {icons[target]} {speciesOptions[target]}
 +                  </strong>
-+                  <small>実動画の注釈IDと共起を見る</small>
++                  <small>実動画の仮名と設定つながりを見る</small>
 +                </span>
 +              </button>
 +            );
@@ -515,25 +603,69 @@
 +      )}
 +      {species === "chimp" || species === "seal" ? (
 +        <App key={species} species={species} />
-@@ -85 +120 @@
+@@ -85 +121 @@
 -  const [mode, setMode] = useState<"ai" | "gt">("ai");
 +  const [mode, setMode] = useState<"ai" | "gt">("gt");
-@@ -103,0 +139,4 @@
+@@ -103,0 +140,4 @@
 +        data.individuals = data.individuals.map((animal) => ({
 +          ...animal,
 +          name: displayAlias(animal.id) ?? animal.name,
 +        }));
-@@ -229 +268,5 @@
+@@ -160,12 +200,22 @@
+-  const pairs = (bundle?.relations ?? [])
+-    .map((relation) => ({ relation, stats: summary(relation, time) }))
+-    .filter(
+-      ({ relation, stats }) =>
+-        stats.seconds > 0 &&
+-        (relation.individual_a === selected ||
+-          relation.individual_b === selected),
+-    );
+-  const visiblePairs = pairs
+-    .filter(
+-      ({ relation }) =>
+-        active.has(relation.individual_a) && active.has(relation.individual_b),
++  const configured = useMemo(
++    () =>
++      fixedRelationships(bundle?.individuals.map((animal) => animal.id) ?? []),
++    [bundle],
++  );
++  const pairs = configured.filter(
++    (relation) =>
++      relation.individual_a === selected || relation.individual_b === selected,
++  );
++  const visiblePairs = configured.filter(
++    (relation) =>
++      active.has(relation.individual_a) && active.has(relation.individual_b),
++  );
++  const overlayRelations: DemoRelationship[] = [...visiblePairs]
++    .sort(
++      (first, second) =>
++        Number(
++          second.individual_a === selected || second.individual_b === selected,
++        ) -
++        Number(
++          first.individual_a === selected || first.individual_b === selected,
++        ),
+@@ -174,8 +223,0 @@
+-  const overlayRelations: DemoRelationship[] = visiblePairs.map(
+-    ({ relation }, index) => ({
+-      ...relation,
+-      id: `gt-pair-${index}`,
+-      kind: "support",
+-      label: mode === "gt" ? "同時出現（GT）" : "同時出現（AI推定）",
+-    }),
+-  );
+@@ -229 +271,5 @@
 -        <button aria-pressed={mode === "ai"} onClick={() => setMode("ai")}>
 +        <button
 +          aria-pressed={mode === "ai"}
 +          disabled
 +          onClick={() => setMode("ai")}
 +        >
-@@ -239 +282 @@
+@@ -239 +285 @@
 -          : "BBoxと個体IDは人手による正解注釈です。AI検出・AI識別の結果ではありません。IDは本動画内だけの対応です。"}
-+          : "表示名は展示用の仮名で、実在の名前ではありません。BBoxと個体IDは人手注釈です。AI識別ではなく、IDは本動画内だけの対応です。"}
-@@ -241,12 +283,0 @@
++          : "表示名は仮名で、関係は展示用の架空設定です。つながりはIDに固定し、再生・シークで変わりません。実在の名前・社会関係ではありません。位置は人手注釈を利用し、BBox枠は表示しません。"}
+@@ -241,12 +286,0 @@
 -      {mode === "ai" && bundle?.inference && (
 -        <p className="footnote" aria-label="AI評価結果">
 -          動画後半の評価：検出Precision{" "}
@@ -546,31 +678,80 @@
 -          %。 同一動画内の時系列分割で、別動画への汎化評価ではありません。
 -        </p>
 -      )}
-@@ -264,4 +295 @@
+@@ -264,4 +298 @@
 -                {mode === "ai"
 -                  ? `${displayed.length}追跡・${active.size}個体識別`
 -                  : `${active.size}個体`}{" "}
 -                · {time.toFixed(1)}秒
 +                {active.size}個体 · {time.toFixed(1)}秒
-@@ -291,5 +319 @@
+@@ -291,5 +322 @@
 -                aria-label={
 -                  mode === "ai"
 -                    ? "AIバウンディングボックス"
 -                    : "GTバウンディングボックス"
 -                }
 +                aria-label="GTバウンディングボックス"
-@@ -305,3 +328,0 @@
+@@ -304,4 +330,0 @@
+-                    observed
 -                    observedLabel={
 -                      mode === "ai" ? "AI推定の共起線" : "GT注釈の共起線"
 -                    }
-@@ -436,0 +458,2 @@
+@@ -335 +358 @@
+-                        stroke={animal.color}
++                        stroke="none"
+@@ -386 +409 @@
+-                  aria-label="GT共起線を表示"
++                  aria-label="仮設定のつながりを表示"
+@@ -390 +413 @@
+-                同時出現の線を表示（選択個体・最大2本）
++                仮設定のつながりを表示（最大2本）
+@@ -412,2 +435 @@
+-              同時出現・近接は表示中の{mode === "ai" ? "AI推定" : "注釈"}
+-              から集計しています。親子・友好・恋愛や実際の物理距離を示しません。
++              友達・ライバル・遊び仲間はID固定の架空設定です。観測された社会関係ではありません。
+@@ -418,2 +440,2 @@
+-              <h2>個体と観測のつながり</h2>
+-              <span>{mode === "ai" ? "AI推定" : "GT注釈"}</span>
++              <h2>個体と設定つながり</h2>
++              <span>仮設定・ID固定</span>
+@@ -436,0 +459,2 @@
 +                observations={displayed}
 +                video={bundle.video}
-@@ -460,0 +484,4 @@
+@@ -441,2 +465,3 @@
+-                edges={visiblePairs.map(({ relation, stats }) => ({
+-                  id: `${relation.individual_a}:${relation.individual_b}`,
++                demo
++                edges={visiblePairs.map((relation) => ({
++                  id: relation.id,
+@@ -445,2 +470,5 @@
+-                  label: `共起 ${stats.seconds.toFixed(1)}秒`,
+-                  style: { stroke: "#2859d6", strokeWidth: 3 },
++                  label: demoRelationshipKinds[relation.kind].label,
++                  style: {
++                    stroke: demoRelationshipKinds[relation.kind].color,
++                    strokeWidth: 3,
++                  },
+@@ -461 +489,5 @@
+-                <h4>{mode === "ai" ? "AI推定" : "注釈"}による共起履歴</h4>
 +                <p>
 +                  表示名「{chosen.name}
 +                  」は展示用の仮名です。実在の名前や性格を示しません。
 +                </p>
++                <h4>設定つながり（架空・ID固定）</h4>
+@@ -464 +496 @@
+-                    {pairs.map(({ relation, stats }) => (
++                    {pairs.map((relation) => (
+@@ -475,3 +507 @@
+-                        ：同時出現 {stats.appearances}回 /{" "}
+-                        {stats.seconds.toFixed(1)}秒、画面上の近接{" "}
+-                        {stats.nearSeconds.toFixed(1)}秒
++                        ：{demoRelationshipKinds[relation.kind].label}（仮設定）
+@@ -482 +512 @@
+-                  <p>この時刻までの共起記録はありません。</p>
++                  <p>設定されたつながりはありません。</p>
+@@ -500 +530 @@
+-          License。社会関係や性格の架空設定は追加していません。
++          License。表示名とつながりは展示用の架空設定です。
 --- a/src/RelationshipOverlay.tsx
 +++ b/src/RelationshipOverlay.tsx
 @@ -24 +23,0 @@
@@ -765,3 +946,49 @@
 +    "ぽてと"
 +  ]
 +}
+--- /dev/null
++++ b/src/fixedRelationships.ts
+@@ -0,0 +1,16 @@
++import { type DemoRelationship, type DemoRelationshipKind } from "./domain";
++
++export function fixedRelationships(identities: string[]): DemoRelationship[] {
++  const sorted = [...new Set(identities)].sort((first, second) =>
++    first.localeCompare(second, "en", { numeric: true }),
++  );
++  const kinds: DemoRelationshipKind[] = ["friend", "rival", "companion"];
++  return sorted.flatMap((first, firstIndex) =>
++    sorted.slice(firstIndex + 1).map((second, offset) => ({
++      id: `fictional:${first}:${second}`,
++      individual_a: first,
++      individual_b: second,
++      kind: kinds[(firstIndex + offset) % kinds.length],
++    })),
++  );
++}
+--- /dev/null
++++ b/tests/fixedRelationships.test.ts
+@@ -0,0 +1,24 @@
++import { describe, expect, it } from "vitest";
++import { fixedRelationships } from "../src/fixedRelationships";
++
++describe("ID-fixed fictional relationships", () => {
++  it("keeps the same assignments regardless of input order", () => {
++    const identities = ["seal_track_03", "seal_track_01", "seal_track_02"];
++    expect(fixedRelationships(identities)).toEqual(
++      fixedRelationships([...identities].reverse()),
++    );
++    expect(identities[0]).toBe("seal_track_03");
++  });
++  it("never assigns a self-link or a duplicate pair", () => {
++    const relations = fixedRelationships(["id_1", "id_2", "id_2", "id_3"]);
++    expect(relations).toHaveLength(3);
++    expect(
++      relations.every((row) => row.individual_a !== row.individual_b),
++    ).toBe(true);
++    expect(new Set(relations.map((row) => row.id)).size).toBe(3);
++  });
++  it("has no relationship for unknown or single identities", () => {
++    expect(fixedRelationships([])).toEqual([]);
++    expect(fixedRelationships(["id_1"])).toEqual([]);
++  });
++});
