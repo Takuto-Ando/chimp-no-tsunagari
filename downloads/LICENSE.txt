@@ -1,0 +1,6 @@
+ChimpACT derived demo videos, CC BY-NC 4.0 (noncommercial only).
+Xiaoxuan Ma, Stephan P. Kaufhold, Jiajun Su, Wentao Zhu, Jack Terwilliger, Andres Meza, Yixin Zhu, Federico Rossano, Yizhou Wang. ChimpACT: A Longitudinal Dataset for Understanding Chimpanzee Behaviors. NeurIPS 2023, vol.36, pp.27501–27531.
+Source: https://shirleymaxx.github.io/ChimpACT/
+Changes: re-encoded, silent, letterboxed to 16:9; names and relationship overlays burned in. Names use precomputed AI estimates, not ground truth.
+Sex, character descriptions and social relationships are fictional demo settings.
+https://creativecommons.org/licenses/by-nc/4.0/
