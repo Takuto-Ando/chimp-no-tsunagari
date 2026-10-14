@@ -99,6 +99,8 @@ http://127.0.0.1:5189/animals.html で動物種・動画カードを切り替え
 
 設定つながり検証pass: 48テスト（順序に依存しないID固定・自己関係／重複なしを追加）、TypeScript/Vite、Prettier、Ruff。全5種で枠非表示、共起ラベルなし、仮関係のシーク時固定、矢印表示切替を確認。55仮名、既存動画切替・相関図の動き・スマホ表示も回帰pass。アザラシ19秒MP4の全decodeと枠なし・友達矢印の焼き込みを目視確認。
 
+スマホ文字サイズ調整（2026-10-15）: 映像幅480px未満では名前と矢印ラベルを映像幅に比例して縮小。600px以下の画面では相関図カード名12px、関係文字9px。390px幅で全5種の名前15px以下・矢印ラベル13px以下・横溢れなしを確認し、PCのアザラシ名20pxは維持。48テスト・TypeScript/Vite・Prettierと仮関係／枠なし回帰もpass。保存MP4は変更せず、レスポンシブUIだけを変更。
+
 ## Additional GT animal demos
 
 datasets/ contains koi, pigeons and pigs from Animal Re-Identification from Video, https://zenodo.org/records/7322821 . Dataset annotations: CC BY 4.0; original stock videos: Pixabay License. These media are integrated into the interactive GT viewer, not offered as standalone downloads. Individual IDs are video-local ground truth, not AI predictions. Display names and ID-fixed relationship labels are fictional exhibition settings, not observed social facts. Original annotation data is unchanged. Full authors, provenance and modifications: datasets/LICENSE.txt. The original ChimpACT files keep their separate CC BY-NC 4.0 license.

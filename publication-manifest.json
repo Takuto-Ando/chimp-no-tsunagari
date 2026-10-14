@@ -3,8 +3,8 @@
   ".ruff_cache/.gitignore": "9e3a60f1e6ec4ae60215c11d54b171392745ec25e9dded433d5bd921363af316",
   ".ruff_cache/0.11.6/5471862852867198129": "fa8d2f2378aa176a6010e2197f491970987a65d1a66f66d86860bbf26b8c840c",
   ".ruff_cache/CACHEDIR.TAG": "5953156d7e0c564a427251316eaf26f8870e6483ae2197f916b630e4f93e31ae",
-  "README.md": "d8f0f8f2a63fe1308c6132f132d12d5fc87b7aeb7fd9a13becb78f0291b5f218",
-  "animals.html": "a910a7709cf8a139212a8519eca393e995edd224a7f0219f50cc89d24088b181",
+  "README.md": "746e8abcf05504e738daf80fed9fcb29b70185e9abaf4c50e8055368fda47ce2",
+  "animals.html": "1a50dff991aea87e2097d608b2209876cd4d9f7c1034b6521f5ca27a00bd481f",
   "assets/index-BCl3VsVy.js": "5f498adc7f667736b3d395041064b163443e3700267fb159bdac364a6e772e45",
   "assets/index-Bavja6RY.js": "68ed0e4d9e95d9093be9e9053057f4a9b84a92cf83bf5f6215e8e43da89b64a3",
   "assets/index-CNUSP3Yk.js": "dbef8eabc3a518592d2047167ca0ad1a16842b721a1dd81b07789bf585c4e0a5",
@@ -12,7 +12,9 @@
   "assets/index-CwWuR-tq.js": "2b9eaed985dd704d3c88adeeb1e1a979e87f66325ed936466bc4417947d98aae",
   "assets/index-D5r33qKE.css": "8df46acf845bc2cd562008e870a9b349a909f2df6c648917b82a307caae6e242",
   "assets/index-DihalOqw.css": "6abe650d7a073e39b11d1259858c838dfa00e55b981e68a39cf799339fc23385",
+  "assets/index-Dst0O1L2.js": "e83563f166ba88fef6eca87c8e7cd26fb35099cdf19b258a335a3a8a8d835a40",
   "assets/index-K7P9pAMS.js": "26d40e02d033cadf7c73602bd442a7d47e9c89345a13d903dcb2384f669d21d8",
+  "assets/index-KTcEfgEw.css": "27764d57109df97667986a3cc170fc445f96f166acc1bcc06f8f0d7e5d624717",
   "assets/index-uGyTomnw.js": "301113c6f0cb02cf9f80444cd8486d86ec166304d9303ef884a966c58d9e228f",
   "data/Azibo_ObsChimp_2015_11_25_d_clip_1000_2000.ai.json": "57ebf8f5565289ffb366a36bcc1511b8250149e469d87caa1bbc832f0e42cde9",
   "data/Azibo_ObsChimp_2015_11_25_d_clip_1000_2000.gt.json": "b45d49d06e208f16cb6dcb505faad8193f84878698f9fe0be6ac7ce8072b8f19",
@@ -90,7 +92,7 @@
   "downloads/sample-01-mapped-16x9.mp4": "11947af9e7722a1faa43834db513f451499404c6eb66b851a39725062d3f1791",
   "downloads/sample-02-mapped-16x9.mp4": "c1d17735c1f6334af79c0ddffdafc80141a116421f0f80a784e11aca57c2524d",
   "downloads/sample-03-mapped-16x9.mp4": "b4af92c4f99ff625ee616aa61762ae3bb1cfdda42ab26c24a9503a448a165a05",
-  "index.html": "ea90761cdafa9e0e86562d08b578e15b8b9c20a33f523a883a94e5748e910317",
+  "index.html": "cdadfef8ad11f9cf7a7d0dd4951d038061e12fdc5b4a93c14c11fe5752d076d9",
   "media/Azibo_ObsChimp_2015_11_25_d_clip_1000_2000.mp4": "03e80cad9e82862401d7e0bbb6abb675107c7215c4f29c68f75fd51e513fa0f3",
   "media/Azibo_ObsChimp_2016_10_07_b_clip_2000_3000.mp4": "049906fbda4604f5baefbe0f4ed249ab7a118de48456f8ff8547e6ddb8a16cf2",
   "media/Azibo_ObsChimp_2017_05_27_b_clip_4000_5000.mp4": "d854f74b2ead72b5d173bff1ca639d3414ab16340f713c8d4c8d414b661637a4",
@@ -228,6 +230,6 @@
   "seal/references/seal_harbor_19s.jpg": "9fcd3c11e2c72edf7ebc38f2a8c3656617991722b40fb180f10dd9aefa185033",
   "seal/references/seal_harbor_pair.jpg": "d436816e97c07c045a521e85183fe4e1198fc136e53dfdc864efe5143cf73be8",
   "seal/serve.py": "cb78476726b87de57712cdc7a19ae3a825c8f90cb4eef3e4d6e0663bec303fff",
-  "seal/ui.patch": "6c57f98c53f17f6aab5e3ece26759988aa66808ca3f31a5a82dc9eef20bb2306",
-  "seal.html": "b32c9aef234e8688a40324e1134204e2aa058541df93c9e51e3d69e2a51f7e28"
+  "seal/ui.patch": "e362c03963cb8d85ad95c77400706c1ec2ba5f00b5cb0e17e7e77bea041e21c2",
+  "seal.html": "4f33358f00cba3281595d91e3cdc6958fc981763a8036e95cccf8f2c46e3f87b"
 }

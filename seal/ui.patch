@@ -226,6 +226,9 @@
 +                  )}
 @@ -752,0 +884 @@
 +                    !sealMode &&
+@@ -798 +930 @@
+-                      const unit = video.width / Math.max(1, displayWidth);
++                      const unit = video.width / Math.max(480, displayWidth);
 @@ -848 +980 @@
 -                            strokeOpacity={viewingMode === "debug" ? 1 : 0}
 +                            strokeOpacity={0}
@@ -655,6 +658,9 @@
 -      label: mode === "gt" ? "同時出現（GT）" : "同時出現（AI推定）",
 -    }),
 -  );
+@@ -201 +243 @@
+-        const unit = bundle.video.width / width;
++        const unit = bundle.video.width / Math.max(480, width);
 @@ -229 +271,5 @@
 -        <button aria-pressed={mode === "ai"} onClick={() => setMode("ai")}>
 +        <button
@@ -758,6 +764,9 @@
 -  observedLabel = "GT注釈の共起線",
 @@ -32 +30,0 @@
 -  observedLabel?: string;
+@@ -34 +32 @@
+-  const unit = video.width / Math.max(1, displayWidth);
++  const unit = video.width / Math.max(480, displayWidth);
 @@ -39 +37 @@
 -      aria-label={observed ? observedLabel : "仮設定の関係矢印"}
 +      aria-label={observed ? "GT注釈の共起線" : "仮設定の関係矢印"}
@@ -779,7 +788,20 @@
 -  object-fit: contain;
 -  border-radius: 12px;
 -}
-@@ -646,0 +632,25 @@
+@@ -629,0 +615,12 @@
++  .animal-node strong {
++    font-size: 12px;
++  }
++  .animal-node span {
++    font-size: 20px;
++  }
++  .animal-node small {
++    font-size: 9px;
++  }
++  .react-flow__edge-text {
++    font-size: 9px !important;
++  }
+@@ -646,0 +644,25 @@
 +  }
 +}
 +.species-switch {
